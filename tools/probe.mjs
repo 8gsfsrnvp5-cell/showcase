@@ -1,0 +1,20 @@
+import { chromium } from 'playwright-core';
+const BASE = 'http://localhost:4600/showcase/skyseal-cargo/';
+const browser = await chromium.launch({ executablePath: 'C:/Program Files/Google/Chrome/Application/chrome.exe', headless: true });
+const page = await (await browser.newContext()).newPage();
+const fails = [];
+page.on('requestfailed', r => fails.push(r.url() + ' ' + r.failure()?.errorText));
+page.on('response', r => { if (r.status() >= 400) fails.push(r.status() + ' ' + r.url()); });
+await page.goto(BASE);
+await page.waitForTimeout(3000);
+const out = await page.evaluate(async () => {
+  const up = await fetch('/showcase/skyseal-cargo/demo/product.svg').then(r => r.blob());
+  const fd = new FormData(); fd.append('file', new File([up], 'product.svg', { type: 'image/svg+xml' }));
+  const saved = await fetch('/showcase/skyseal-cargo/api/upload', { method: 'POST', body: fd }).then(r => r.json());
+  if (!saved.url) return { saved };
+  const r = await fetch(saved.url.replace('/api/', '/showcase/skyseal-cargo/api/'));
+  const buf = new Uint8Array(await r.arrayBuffer());
+  return { saved, status: r.status, type: r.headers.get('content-type'), size: buf.length, upSize: up.size, head: new TextDecoder().decode(buf.slice(0, 80)) };
+});
+console.log(JSON.stringify({ out, fails }, null, 2));
+await browser.close();

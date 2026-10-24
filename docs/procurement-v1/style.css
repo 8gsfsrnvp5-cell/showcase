@@ -1,0 +1,83 @@
+:root {
+  --bg: #f4f6f8;
+  --card: #ffffff;
+  --text: #18202a;
+  --muted: #667085;
+  --border: #d9dee7;
+  --critical: #ffe5e5;
+  --critical-text: #a40000;
+  --warning: #fff4d6;
+  --warning-text: #8a5a00;
+  --ok: #e7f8ed;
+  --ok-text: #0f6b2f;
+  --primary: #1f5eff;
+}
+
+* { box-sizing: border-box; }
+body {
+  margin: 0;
+  font-family: Arial, sans-serif;
+  background: var(--bg);
+  color: var(--text);
+}
+.topbar {
+  display: flex;
+  justify-content: space-between;
+  gap: 16px;
+  padding: 24px;
+  background: #111827;
+  color: white;
+}
+.topbar h1 { margin: 0 0 6px; }
+.topbar p { margin: 0; color: #cbd5e1; }
+.layout { max-width: 1280px; margin: 24px auto; padding: 0 16px 32px; }
+.card {
+  background: var(--card);
+  border: 1px solid var(--border);
+  border-radius: 14px;
+  padding: 18px;
+  margin-bottom: 18px;
+  box-shadow: 0 8px 22px rgba(15, 23, 42, 0.05);
+}
+.card h2 { margin-top: 0; }
+.grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+  gap: 12px;
+}
+label { font-size: 13px; color: var(--muted); display: grid; gap: 6px; }
+input {
+  padding: 10px 12px;
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  font-size: 14px;
+}
+button {
+  border: none;
+  border-radius: 9px;
+  padding: 11px 16px;
+  cursor: pointer;
+  font-weight: 700;
+}
+.primary { background: var(--primary); color: white; margin-top: 14px; }
+.topbar button { background: white; color: #111827; align-self: start; }
+.stats {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+  gap: 12px;
+}
+.stats div {
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  padding: 14px;
+}
+.stats strong { display: block; font-size: 28px; }
+.stats span { color: var(--muted); }
+.table-wrap { overflow-x: auto; }
+table { width: 100%; border-collapse: collapse; font-size: 13px; }
+th, td { border-bottom: 1px solid var(--border); padding: 10px; text-align: left; vertical-align: top; }
+th { background: #f8fafc; color: #334155; white-space: nowrap; }
+.badge { display: inline-block; padding: 5px 8px; border-radius: 999px; font-weight: 700; white-space: nowrap; }
+.critical { background: var(--critical); color: var(--critical-text); }
+.warning { background: var(--warning); color: var(--warning-text); }
+.ok { background: var(--ok); color: var(--ok-text); }

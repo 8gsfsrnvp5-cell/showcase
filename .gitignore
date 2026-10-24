@@ -1,0 +1,5 @@
+# project clones the demos are built from (each is its own repository)
+repos/
+node_modules/
+tools/*.png
+*.log

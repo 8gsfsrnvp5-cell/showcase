@@ -1,0 +1,1138 @@
+<!doctype html>
+<html lang="ru">
+<head>
+  <meta charset="utf-8" />
+  <meta name="robots" content="noindex" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>BuildMind Procurement MVP</title>
+  <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+  <header class="topbar">
+    <div>
+      <h1>BuildMind Procurement MVP</h1>
+      <p>Панель контроля закупок и рисков по строительным материалам</p>
+    </div>
+    <button id="exportBtn">Скачать JSON</button>
+  </header>
+
+  <main class="layout">
+     
+    <section
+  id="operationalControlCenter"
+  class="card operational-control-center"
+>
+  <div class="control-center-header">
+    <div>
+      <h2>Оперативный центр компании</h2>
+
+     <p class="muted">
+  Общая сводка критических рисков, закупок,
+  поставок и обеспеченности по всем проектам,
+  объектам и работам компании.
+</p>
+    </div>
+
+    <div class="control-analysis-date">
+      Дата анализа:
+      <strong id="controlAnalysisDate">—</strong>
+    </div>
+  </div>
+
+  <div class="control-summary">
+    <button
+      type="button"
+      class="control-summary-item control-critical"
+      data-control-filter="critical"
+    >
+      <strong id="criticalCount">0</strong>
+      <span>Критические</span>
+    </button>
+
+    <button
+      type="button"
+      class="control-summary-item control-order"
+      data-control-filter="order"
+    >
+      <strong id="warningCount">0</strong>
+      <span>Нужно заказать</span>
+    </button>
+
+    <button
+      type="button"
+      class="control-summary-item control-low-stock"
+      data-control-filter="low-stock"
+    >
+      <strong id="lowStockCount">0</strong>
+      <span>Заканчиваются</span>
+    </button>
+
+    <button
+      type="button"
+      class="control-summary-item control-expected"
+      data-control-filter="expected"
+    >
+      <strong id="expectedDeliveryCount">0</strong>
+      <span>Ожидаемые поставки</span>
+    </button>
+
+    <button
+      type="button"
+      class="control-summary-item control-delayed"
+      data-control-filter="delayed"
+    >
+      <strong id="delayedDeliveryCount">0</strong>
+      <span>Задерживаются</span>
+    </button>
+
+    <button
+      type="button"
+      class="control-summary-item control-ok"
+      data-control-filter="ok"
+    >
+      <strong id="okCount">0</strong>
+      <span>Обеспечено</span>
+    </button>
+  </div>
+
+  <div class="control-toolbar">
+    <label>
+      Показать
+      <select id="controlStatusFilter">
+        <option value="all">Все активные события</option>
+        <option value="critical">Критические</option>
+        <option value="order">Нужно заказать</option>
+        <option value="low-stock">Заканчиваются</option>
+        <option value="expected">Ожидаемые поставки</option>
+        <option value="delayed">Задерживаются</option>
+        <option value="ok">Обеспечено</option>
+      </select>
+    </label>
+
+    <label>
+      Проект
+      <select id="controlProjectFilter">
+        <option value="all">Все проекты</option>
+      </select>
+    </label>
+
+    <label>
+      Объект
+      <select id="controlObjectFilter">
+        <option value="all">Все объекты</option>
+      </select>
+    </label>
+  </div>
+
+  <div class="control-events-header">
+    <h3>Активные события и рекомендации</h3>
+
+    <span id="controlEventsTotal">
+      Найдено событий: 0
+    </span>
+  </div>
+
+  <div
+    id="controlEventsList"
+    class="control-events-list"
+  >
+    <div class="control-empty-state">
+      Данные анализируются. Здесь появятся критические
+      материалы, закупки и поставки.
+    </div>
+  </div>
+</section>
+    
+  <section class="card">
+  <h2>Данные проекта</h2>
+
+  <p class="muted">
+    Общие даты относятся ко всему проекту. Сроки отдельных работ задаются ниже в контекстах работ.
+  </p>
+
+  <div class="grid">
+    <label>
+      Проект
+      <input
+        id="projectName"
+        value="АСУДД 1"
+      />
+    </label>
+
+    <label>
+      Объект
+      <input
+        id="objectName"
+        value="СВХ"
+      />
+    </label>
+
+    <label>
+      Общее начало проекта по ГПР
+      <input
+        id="projectStartDate"
+        type="date"
+        value="2026-07-01"
+      />
+    </label>
+
+    <label>
+      Общее окончание проекта по ГПР
+      <input
+        id="projectEndDate"
+        type="date"
+        value="2026-12-30"
+      />
+    </label>
+
+    <label>
+      Дата анализа
+      <input
+        id="todayDate"
+        type="date"
+        value="2026-07-09"
+      />
+    </label>
+  </div>
+
+  <!--
+    Временные технические поля.
+    Их пока использует app.js для расчёта материалов.
+    Не удалять до подключения расчётов к выбранному контексту.
+  -->
+  <div style="display: none;" aria-hidden="true">
+    <input
+      id="workName"
+      value="Кабельная канализация на эстакаде В4"
+    />
+
+    <input
+      id="workStartDate"
+      type="date"
+      value="2026-07-30"
+    />
+
+    <input
+      id="safetyDays"
+      type="number"
+      value="2"
+      min="0"
+    />
+  </div>
+
+  <button id="recalcBtn" class="primary">
+    Пересчитать риски
+  </button>
+</section>
+
+ 
+<section class="card assistant-card">
+  <h2>Командное окно BuildMind</h2>
+  <p class="muted">
+    Напишите команду простым языком. Например: “Покажи материалы с дефицитом”.
+  </p>
+
+  <textarea
+    id="assistantInput"
+    rows="4"
+    placeholder="Например: покажи материалы с дефицитом"
+  ></textarea>
+
+  <div class="assistant-actions">
+   <button type="button" id="askAssistantBtn" onclick="runBuildMindAssistant()">
+  Спросить BuildMind
+</button>
+
+<button type="button" id="clearAssistantBtn" class="secondary-btn" onclick="clearBuildMindAssistant()">
+  Очистить ответ
+</button>
+  </div>
+
+  <div id="assistantAnswer" class="assistant-answer">
+    Здесь появится ответ BuildMind.
+  </div>
+</section>
+    <section class="card">
+      <h2>Материалы</h2>
+      <div class="table-wrap">
+        <table id="materialsTable">
+          <thead>
+            <tr>
+              <th>Проект</th>
+              <th>Объект</th>
+              <th>Работа</th>
+              <th>Материал</th>
+              <th>Ответственный</th>
+              <th>Нужно</th>
+              <th>Ед.</th>
+              <th>Общий остаток</th>
+              <th>Резерв</th>
+              <th>Свободно</th>
+              <th>Подтверждено</th>
+              <th>Дата поставки</th>
+              <th>Срок, дней</th>
+              <th>Дефицит</th>
+              <th>Дата потребности</th>
+              <th>Крайняя дата заказа</th>
+              <th>Риск</th>
+              <th>Действие</th>
+              <th>Управление</th>
+            </tr>
+          </thead>
+          <tbody></tbody>
+        </table>
+      </div>
+    </section>
+
+    <section class="card">
+      <section class="context-layout">
+  <div class="card current-context-card">
+    <h2>Текущий контекст контроля</h2>
+
+    <p><strong>Проект:</strong> <span id="currentProject">АСУДД 1</span></p>
+    <p><strong>Объект:</strong> <span id="currentObject">СВХ</span></p>
+    <p><strong>Работа:</strong> <span id="currentWork">Кабельная канализация на эстакаде ДВ-4</span></p>
+   <p><strong>Начало по ГПР:</strong> <span id="currentStartDate">2026-07-30</span></p>
+<p><strong>Окончание по ГПР:</strong> <span id="currentEndDate">2026-08-15</span></p>
+<p><strong>Страховой запас:</strong> <span id="currentSafetyDays">2 дня</span></p>
+  </div>
+
+ <div class="card work-contexts-card">
+  <h2>Контексты работ</h2>
+
+ <p class="muted">
+  Проект и объект берутся из данных проекта. Выберите работу, после чего форма материала заполнится автоматически.
+</p>
+
+  <div id="contextsList" class="contexts-list"></div>
+
+  <button
+    type="button"
+    class="add-context-btn"
+    onclick="openContextForm()"
+  >
+    + Добавить контекст
+  </button>
+
+  <div id="contextForm" class="context-form hidden">
+    <h3>Новый контекст работы</h3>
+
+    <label>
+      Проект
+     <input id="contextProject" readonly />
+    </label>
+
+    <label>
+      Объект
+      <input id="contextObject" readonly />
+    </label>
+
+    <label>
+      Работа
+      <input id="contextWork" />
+    </label>
+
+  <label>
+  Начало работы по ГПР
+  <input id="contextStartDate" type="date" />
+</label>
+
+<label>
+  Окончание работы по ГПР
+  <input id="contextEndDate" type="date" />
+</label>
+
+<label>
+  Страховой запас, дней
+  <input
+    id="contextSafetyDays"
+    type="number"
+    min="0"
+    value="2"
+  />
+</label>
+
+    <div class="context-form-actions">
+      <button type="button" onclick="addWorkContext()">
+        Сохранить контекст
+      </button>
+
+      <button
+        type="button"
+        class="secondary-btn"
+        onclick="closeContextForm()"
+      >
+        Отмена
+      </button>
+    </div>
+  </div>
+</div>
+</section>
+      <h2>Добавить материал</h2>
+      <div class="grid add-grid">
+       <label>
+  Проект
+  <input id="newProject" readonly />
+</label>
+
+<label>
+  Объект
+  <input id="newObject" readonly />
+</label>
+
+<label>
+  Работа
+  <input id="newWork" readonly />
+</label>
+        <label>Материал<input id="newName" /></label>
+        <label>Ответственный<input id="newResponsible" /></label>
+        <label>Нужно<input id="newNeed" type="number" /></label>
+        <label>Ед.
+          <select id="newUnit">
+    <option value="шт">шт — штуки</option>
+    <option value="м">м — метры</option>
+    <option value="п.м.">п.м. — погонные метры</option>
+    <option value="м²">м² — квадратные метры</option>
+    <option value="м³">м³ — кубические метры</option>
+    <option value="т">т — тонны</option>
+    <option value="кг">кг — килограммы</option>
+    <option value="л">л — литры</option>
+    <option value="компл.">компл. — комплекты</option>
+    <option value="рул.">рул. — рулоны</option>
+    <option value="меш.">меш. — мешки</option>
+    <option value="упак.">упак. — упаковки</option>
+    <option value="кор.">кор. — коробки</option>
+  </select>
+</label>
+
+        <label>Общий остаток<input id="newStock" type="number" /></label>
+        <label>Резерв<input id="newReserved" type="number" /></label>
+        <label>Подтверждено поставщиком<input id="newConfirmed" type="number" value="0" /></label>
+        <label>Дата поставки<input id="newDelivery" type="date" /></label>
+        <label>Срок поставки, дней<input id="newLead" type="number" value="1" /></label>
+      </div>
+      <button id="addBtn" class="primary">Добавить и пересчитать</button>
+      <button id="resetBtn" class="secondary">Сбросить к примеру</button>
+    </section>
+  </main>
+  <script src="app.js"></script>
+
+  <script>
+    function calculateAssistantRowLocal(material) {
+      const need = Number(material.need) || 0;
+      const stock = Number(material.stock) || 0;
+      const reserved = Number(material.reserved) || 0;
+      const confirmed = Number(material.confirmed) || 0;
+
+      const free = Math.max(0, stock - reserved);
+      const available = free + confirmed;
+      const deficit = Math.max(0, need - available);
+
+      return {
+        ...material,
+        need,
+        stock,
+        reserved,
+        confirmed,
+        free,
+        available,
+        deficit
+      };
+    }
+
+    function runBuildMindAssistant() {
+      const input = document.getElementById('assistantInput');
+      const answer = document.getElementById('assistantAnswer');
+
+      if (!input || !answer) {
+        alert('Командное окно не найдено.');
+        return;
+      }
+
+      const command = input.value.trim().toLowerCase();
+
+      if (!command) {
+        answer.textContent = 'Введите команду для BuildMind.';
+        return;
+      }
+
+      if (typeof materials === 'undefined') {
+        answer.textContent = 'Ошибка: список материалов не найден. Нужно проверить app.js.';
+        return;
+      }
+
+      const calculatedMaterials = materials.map(calculateAssistantRowLocal);
+      if (
+        command.includes('сводка') ||
+        command.includes('сводку') ||
+        command.includes('итог') ||
+        command.includes('общая информация')
+      ) {
+        const totalMaterials = calculatedMaterials.length;
+
+        const deficitMaterials = calculatedMaterials.filter(function (item) {
+          return item.deficit > 0;
+        });
+
+        const withoutResponsible = calculatedMaterials.filter(function (item) {
+          return !item.responsible || item.responsible === 'Не назначен';
+        });
+
+        let biggestDeficit = null;
+
+        deficitMaterials.forEach(function (item) {
+          if (!biggestDeficit || item.deficit > biggestDeficit.deficit) {
+            biggestDeficit = item;
+          }
+        });
+
+        let summaryText = 'Сводка BuildMind:\n\n';
+  
+        summaryText += `Всего материалов: ${totalMaterials}\n`;
+        summaryText += `Материалов с дефицитом: ${deficitMaterials.length}\n`;
+        summaryText += `Материалов без ответственного: ${withoutResponsible.length}\n`;
+
+        if (biggestDeficit) {
+          summaryText += `Самый большой дефицит: ${biggestDeficit.name} — ${biggestDeficit.deficit} ${biggestDeficit.unit}\n`;
+        } else {
+          summaryText += 'Самый большой дефицит: не найден\n';
+        }
+
+        summaryText += '\nКраткий вывод:\n';
+
+        if (deficitMaterials.length > 0) {
+          summaryText += 'Есть материалы с дефицитом. Нужно проверить закупки и ответственных.';
+        } else {
+          summaryText += 'По текущим данным дефицита материалов нет.';
+        }
+
+        answer.textContent = summaryText;
+        return;
+      }
+            if (
+        command.includes('проект') ||
+        command.includes('объект') ||
+        command.includes('работа')
+      ) {
+        const contextMaterials = calculatedMaterials.filter(function (item) {
+          const project = (item.project || '').toLowerCase();
+          const object = (item.object || '').toLowerCase();
+          const work = (item.work || '').toLowerCase();
+
+          return (
+            project && command.includes(project)
+          ) || (
+            object && command.includes(object)
+          ) || (
+            work && command.includes(work)
+          );
+        });
+
+        if (contextMaterials.length === 0) {
+          answer.textContent =
+            'Я не нашёл материалы по указанному проекту, объекту или работе.\n\n' +
+            'Попробуйте написать точное название, например:\n' +
+            '- Покажи объект СВХ\n' +
+            '- Покажи проект АСУДД 1\n' +
+            '- Покажи работу Кабельная канализация на эстакаде В4';
+          return;
+        }
+
+        const lines = contextMaterials.map(function (item) {
+          return `- ${item.project || '—'} / ${item.object || '—'} / ${item.work || '—'} / ${item.name}: нужно ${item.need} ${item.unit}, доступно ${item.available} ${item.unit}, дефицит ${item.deficit} ${item.unit}`;
+        });
+
+        answer.textContent =
+          'Материалы по найденному проекту / объекту / работе:\n\n' +
+          lines.join('\n');
+
+        return;
+      }
+      if (
+        command.includes('дефицит') ||
+        command.includes('не хватает') ||
+        command.includes('риск')
+      ) {
+        const deficitMaterials = calculatedMaterials.filter(item => item.deficit > 0);
+
+        if (deficitMaterials.length === 0) {
+          answer.textContent = 'Материалов с дефицитом не найдено.';
+          return;
+        }
+
+        const lines = deficitMaterials.map(item => {
+          return `- ${item.project || '—'} / ${item.object || '—'} / ${item.work || '—'} / ${item.name}: дефицит ${item.deficit} ${item.unit}, ответственный: ${item.responsible || 'не назначен'}`;
+        });
+
+        answer.textContent = 'Материалы с дефицитом:\n\n' + lines.join('\n');
+        return;
+      }
+
+      if (
+        command.includes('все материалы') ||
+        command.includes('покажи материалы') ||
+        command.includes('список материалов')
+      ) {
+        const lines = calculatedMaterials.map(item => {
+          return `- ${item.project || '—'} / ${item.object || '—'} / ${item.work || '—'} / ${item.name}: нужно ${item.need} ${item.unit}, доступно ${item.available} ${item.unit}, дефицит ${item.deficit} ${item.unit}`;
+        });
+
+        answer.textContent = 'Список материалов:\n\n' + lines.join('\n');
+        return;
+      }
+
+      if (
+        command.includes('ответственный') ||
+        command.includes('кто отвечает') ||
+        command.includes('ответственные')
+      ) {
+        const lines = calculatedMaterials.map(item => {
+          return `- ${item.project || '—'} / ${item.object || '—'} / ${item.work || '—'} / ${item.name}: ${item.responsible || 'ответственный не назначен'}`;
+        });
+
+        answer.textContent = 'Ответственные по материалам:\n\n' + lines.join('\n');
+        return;
+      }
+
+      if (
+        command.includes('помощь') ||
+        command.includes('что умеешь') ||
+        command.includes('команды')
+      ) {
+        answer.textContent =
+          'Я пока понимаю простые команды:\n\n' +
+          '1. Покажи материалы с дефицитом\n' +
+          '2. Покажи все материалы\n' +
+          '3. Кто ответственный\n' +
+          '4. Помощь\n\n' +
+          'Позже я буду понимать проекты, объекты, работы и периоды.';
+        return;
+      }
+
+      answer.textContent =
+        'Я пока не понял команду.\n\n' +
+        'Попробуйте написать:\n' +
+        '- Покажи материалы с дефицитом\n' +
+        '- Покажи все материалы\n' +
+        '- Кто ответственный\n' +
+        '- Помощь';
+    }
+
+    function clearBuildMindAssistant() {
+      const answer = document.getElementById('assistantAnswer');
+      const input = document.getElementById('assistantInput');
+
+      if (answer) {
+        answer.textContent = 'Здесь появится ответ BuildMind.';
+      }
+
+      if (input) {
+        input.value = '';
+      }
+    }
+       function selectWorkContext(
+  project,
+  object,
+  work,
+  startDate,
+  endDate,
+  safetyDays
+) {
+  const currentProject =
+    document.getElementById('currentProject');
+
+  const currentObject =
+    document.getElementById('currentObject');
+
+  const currentWork =
+    document.getElementById('currentWork');
+
+  const currentStartDate =
+    document.getElementById('currentStartDate');
+
+  const currentEndDate =
+    document.getElementById('currentEndDate');
+
+  const currentSafetyDays =
+    document.getElementById('currentSafetyDays');
+
+  if (currentProject) {
+    currentProject.textContent = project || '—';
+  }
+
+  if (currentObject) {
+    currentObject.textContent = object || '—';
+  }
+
+  if (currentWork) {
+    currentWork.textContent = work || '—';
+  }
+
+  if (currentStartDate) {
+    currentStartDate.textContent = startDate || '—';
+  }
+
+  if (currentEndDate) {
+    currentEndDate.textContent = endDate || '—';
+  }
+
+  if (currentSafetyDays) {
+    currentSafetyDays.textContent =
+      Number.isFinite(Number(safetyDays))
+        ? safetyDays + ' дня'
+        : '—';
+  }
+
+  const newProject =
+    document.getElementById('newProject');
+
+  const newObject =
+    document.getElementById('newObject');
+
+  const newWork =
+    document.getElementById('newWork');
+
+  if (newProject) {
+    newProject.value = project || '';
+  }
+
+  if (newObject) {
+    newObject.value = object || '';
+  }
+
+  if (newWork) {
+    newWork.value = work || '';
+  }
+
+  const technicalWorkName =
+    document.getElementById('workName');
+
+  const technicalWorkStartDate =
+    document.getElementById('workStartDate');
+
+  const technicalSafetyDays =
+    document.getElementById('safetyDays');
+
+  if (technicalWorkName) {
+    technicalWorkName.value = work || '';
+  }
+
+  if (technicalWorkStartDate) {
+    technicalWorkStartDate.value = startDate || '';
+  }
+
+  if (technicalSafetyDays) {
+    technicalSafetyDays.value =
+      Number.isFinite(Number(safetyDays))
+        ? String(safetyDays)
+        : '0';
+  }
+
+  if (typeof render === 'function') {
+    render();
+  }
+}
+
+const defaultWorkContexts = [
+  {
+    id: 'context-1',
+    project: 'АСУДД 1',
+    object: 'СВХ',
+    work: 'Кабельная канализация на эстакаде ДВ-4',
+    startDate: '2026-07-30',
+    endDate: '2026-08-15',
+    safetyDays: 2
+  },
+  {
+    id: 'context-2',
+    project: 'АСУДД 1',
+    object: 'ЮВХ',
+    work: 'Кабельная канализация на эстакаде В3',
+    startDate: '2026-08-05',
+    endDate: '2026-08-20',
+    safetyDays: 2
+  },
+  {
+    id: 'context-3',
+    project: 'АСУДД 1',
+    object: 'СВХ',
+    work: 'Монтаж кабеля',
+    startDate: '2026-08-12',
+    endDate: '2026-08-25',
+    safetyDays: 3
+  }
+];
+    let workContexts = [];
+    let activeContextId =
+      localStorage.getItem('buildmindActiveContextId') || '';
+
+    function loadWorkContexts() {
+      const savedContexts =
+        localStorage.getItem('buildmindWorkContexts');
+
+      if (savedContexts === null) {
+        workContexts = defaultWorkContexts.map(function (item) {
+          return { ...item };
+        });
+
+        saveWorkContexts();
+        return;
+      }
+
+      try {
+        const parsedContexts = JSON.parse(savedContexts);
+
+       workContexts = Array.isArray(parsedContexts)
+  ? parsedContexts.map(function (context) {
+      const defaultContext =
+        defaultWorkContexts.find(function (item) {
+          return item.id === context.id;
+        });
+
+      return {
+        ...context,
+        endDate:
+          context.endDate ||
+          (defaultContext ? defaultContext.endDate : '')
+      };
+    })
+  : [];
+
+saveWorkContexts();
+      } catch (error) {
+        workContexts = defaultWorkContexts.map(function (item) {
+          return { ...item };
+        });
+
+        saveWorkContexts();
+      }
+    }
+
+    function saveWorkContexts() {
+      localStorage.setItem(
+        'buildmindWorkContexts',
+        JSON.stringify(workContexts)
+      );
+    }
+
+    function renderWorkContexts() {
+      const list = document.getElementById('contextsList');
+
+      if (!list) {
+        return;
+      }
+
+      list.innerHTML = '';
+
+      if (workContexts.length === 0) {
+        const emptyMessage = document.createElement('div');
+
+        emptyMessage.className = 'empty-contexts';
+        emptyMessage.textContent =
+          'Контексты пока не добавлены. Нажмите «+ Добавить контекст».';
+
+        list.appendChild(emptyMessage);
+        return;
+      }
+
+      workContexts.forEach(function (context) {
+        const row = document.createElement('div');
+
+        row.className =
+          'context-row' +
+          (context.id === activeContextId ? ' active' : '');
+
+        const selectButton = document.createElement('button');
+
+        selectButton.type = 'button';
+        selectButton.className = 'context-select';
+        selectButton.textContent =
+          context.project +
+          ' / ' +
+          context.object +
+          ' / ' +
+          context.work;
+
+        selectButton.addEventListener('click', function () {
+          selectWorkContextById(context.id);
+        });
+
+        const deleteButton = document.createElement('button');
+
+        deleteButton.type = 'button';
+        deleteButton.className = 'context-delete';
+        deleteButton.textContent = '×';
+        deleteButton.title = 'Удалить контекст';
+
+        deleteButton.addEventListener('click', function () {
+          deleteWorkContext(context.id);
+        });
+
+        row.appendChild(selectButton);
+        row.appendChild(deleteButton);
+        list.appendChild(row);
+      });
+    }
+
+    function selectWorkContextById(contextId) {
+      const selectedContext = workContexts.find(function (context) {
+        return context.id === contextId;
+      });
+
+      if (!selectedContext) {
+        return;
+      }
+
+      activeContextId = selectedContext.id;
+
+      localStorage.setItem(
+        'buildmindActiveContextId',
+        activeContextId
+      );
+
+     selectWorkContext(
+  selectedContext.project,
+  selectedContext.object,
+  selectedContext.work,
+  selectedContext.startDate,
+  selectedContext.endDate,
+  selectedContext.safetyDays
+);
+
+      renderWorkContexts();
+    }
+
+   function openContextForm() {
+  const form =
+    document.getElementById('contextForm');
+
+  const projectInput =
+    document.getElementById('contextProject');
+
+  const objectInput =
+    document.getElementById('contextObject');
+
+  const workInput =
+    document.getElementById('contextWork');
+
+  const projectNameInput =
+    document.getElementById('projectName');
+
+  const objectNameInput =
+    document.getElementById('objectName');
+
+  if (projectInput) {
+    projectInput.value =
+      projectNameInput
+        ? projectNameInput.value.trim()
+        : '';
+  }
+
+  if (objectInput) {
+    objectInput.value =
+      objectNameInput
+        ? objectNameInput.value.trim()
+        : '';
+  }
+
+  if (form) {
+    form.classList.remove('hidden');
+  }
+
+  if (workInput) {
+    workInput.focus();
+  }
+}
+
+    function closeContextForm() {
+      const form = document.getElementById('contextForm');
+
+      if (form) {
+        form.classList.add('hidden');
+      }
+
+      clearContextForm();
+    }
+
+    function clearContextForm() {
+      document.getElementById('contextProject').value = '';
+      document.getElementById('contextObject').value = '';
+      document.getElementById('contextWork').value = '';
+      document.getElementById('contextStartDate').value = '';
+      document.getElementById('contextEndDate').value = '';
+      document.getElementById('contextSafetyDays').value = '2';
+    }
+
+ function addWorkContext() {
+  const project =
+    document.getElementById('contextProject').value.trim();
+
+  const object =
+    document.getElementById('contextObject').value.trim();
+
+  const work =
+    document.getElementById('contextWork').value.trim();
+
+  const startDate =
+    document.getElementById('contextStartDate').value;
+
+  const endDate =
+    document.getElementById('contextEndDate').value;
+
+  const safetyDays = Number(
+    document.getElementById('contextSafetyDays').value
+  );
+
+  if (
+    !project ||
+    !object ||
+    !work ||
+    !startDate ||
+    !endDate
+  ) {
+    alert(
+      'Заполните проект, объект, работу, начало и окончание работы по ГПР.'
+    );
+    return;
+  }
+
+  if (endDate < startDate) {
+    alert(
+      'Дата окончания работы не может быть раньше даты начала.'
+    );
+    return;
+  }
+
+  if (
+    !Number.isFinite(safetyDays) ||
+    safetyDays < 0
+  ) {
+    alert(
+      'Страховой запас должен быть числом не меньше нуля.'
+    );
+    return;
+  }
+
+  const duplicateContext =
+    workContexts.some(function (context) {
+      return (
+        context.project.toLowerCase() ===
+          project.toLowerCase() &&
+        context.object.toLowerCase() ===
+          object.toLowerCase() &&
+        context.work.toLowerCase() ===
+          work.toLowerCase()
+      );
+    });
+
+  if (duplicateContext) {
+    alert(
+      'Такая работа уже существует в выбранном проекте и объекте.'
+    );
+    return;
+  }
+
+  const newContext = {
+    id: 'context-' + Date.now(),
+    project,
+    object,
+    work,
+    startDate,
+    endDate,
+    safetyDays
+  };
+
+  workContexts.push(newContext);
+
+  saveWorkContexts();
+  closeContextForm();
+  selectWorkContextById(newContext.id);
+}
+
+    function deleteWorkContext(contextId) {
+      const contextToDelete = workContexts.find(function (context) {
+        return context.id === contextId;
+      });
+
+      if (!contextToDelete) {
+        return;
+      }
+
+      const confirmed = confirm(
+        'Удалить контекст?\n\n' +
+        contextToDelete.project +
+        ' / ' +
+        contextToDelete.object +
+        ' / ' +
+        contextToDelete.work
+      );
+
+      if (!confirmed) {
+        return;
+      }
+
+      workContexts = workContexts.filter(function (context) {
+        return context.id !== contextId;
+      });
+
+      saveWorkContexts();
+
+      if (activeContextId === contextId) {
+        activeContextId = '';
+
+        localStorage.removeItem(
+          'buildmindActiveContextId'
+        );
+
+        if (workContexts.length > 0) {
+          selectWorkContextById(workContexts[0].id);
+          return;
+        }
+
+        clearCurrentWorkContext();
+      }
+
+      renderWorkContexts();
+    }
+
+    function clearCurrentWorkContext() {
+      document.getElementById('currentProject').textContent = '—';
+      document.getElementById('currentObject').textContent = '—';
+      document.getElementById('currentWork').textContent = '—';
+      document.getElementById('currentStartDate').textContent = '—';
+      document.getElementById('currentEndDate').textContent = '—';
+      document.getElementById('currentSafetyDays').textContent = '—';
+
+      document.getElementById('newProject').value = '';
+      document.getElementById('newObject').value = '';
+      document.getElementById('newWork').value = '';
+    }
+
+    function initializeWorkContexts() {
+      loadWorkContexts();
+
+      if (workContexts.length === 0) {
+        clearCurrentWorkContext();
+        renderWorkContexts();
+        return;
+      }
+
+      const activeContextExists = workContexts.some(
+        function (context) {
+          return context.id === activeContextId;
+        }
+      );
+
+      if (activeContextExists) {
+        selectWorkContextById(activeContextId);
+      } else {
+        selectWorkContextById(workContexts[0].id);
+      }
+    }
+
+    initializeWorkContexts();
+  </script>
+</body>
+</html>
+ 
+

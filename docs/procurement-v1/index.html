@@ -1,0 +1,84 @@
+<!doctype html>
+<html lang="ru">
+<head>
+  <meta charset="utf-8" />
+  <meta name="robots" content="noindex" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>BuildMind Procurement MVP</title>
+  <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+  <header class="topbar">
+    <div>
+      <h1>BuildMind Procurement MVP</h1>
+      <p>Панель контроля закупок и рисков по строительным материалам</p>
+    </div>
+    <button id="exportBtn">Скачать JSON</button>
+  </header>
+
+  <main class="layout">
+    <section class="card">
+      <h2>Данные проекта</h2>
+      <div class="grid">
+        <label>Проект<input id="projectName" value="Прокладка кабельной канализации" /></label>
+        <label>Объект<input id="objectName" value="СВХ" /></label>
+        <label>Работа<input id="workName" value="Кабельная канализация на эстакаде В4" /></label>
+        <label>Дата начала работы<input id="workStartDate" type="date" value="2026-07-30" /></label>
+        <label>Страховой запас, дней<input id="safetyDays" type="number" value="2" min="0" /></label>
+        <label>Текущая дата контроля<input id="todayDate" type="date" value="2026-07-09" /></label>
+      </div>
+      <button id="recalcBtn" class="primary">Пересчитать риски</button>
+    </section>
+
+    <section class="card stats">
+      <div><strong id="criticalCount">0</strong><span>критических рисков</span></div>
+      <div><strong id="warningCount">0</strong><span>предупреждений</span></div>
+      <div><strong id="okCount">0</strong><span>обеспечено</span></div>
+    </section>
+
+    <section class="card">
+      <h2>Материалы</h2>
+      <div class="table-wrap">
+        <table id="materialsTable">
+          <thead>
+            <tr>
+              <th>Материал</th>
+              <th>Нужно</th>
+              <th>Ед.</th>
+              <th>Общий остаток</th>
+              <th>Резерв</th>
+              <th>Свободно</th>
+              <th>Подтверждено</th>
+              <th>Дата поставки</th>
+              <th>Срок, дней</th>
+              <th>Дефицит</th>
+              <th>Дата потребности</th>
+              <th>Крайняя дата заказа</th>
+              <th>Риск</th>
+              <th>Действие</th>
+            </tr>
+          </thead>
+          <tbody></tbody>
+        </table>
+      </div>
+    </section>
+
+    <section class="card">
+      <h2>Добавить материал</h2>
+      <div class="grid add-grid">
+        <label>Материал<input id="newName" placeholder="Кабель" /></label>
+        <label>Нужно<input id="newNeed" type="number" placeholder="1000" /></label>
+        <label>Ед.<input id="newUnit" placeholder="м" /></label>
+        <label>Общий остаток<input id="newStock" type="number" value="0" /></label>
+        <label>Резерв<input id="newReserved" type="number" value="0" /></label>
+        <label>Подтверждено поставщиком<input id="newConfirmed" type="number" value="0" /></label>
+        <label>Дата поставки<input id="newDelivery" type="date" /></label>
+        <label>Срок поставки, дней<input id="newLead" type="number" value="1" /></label>
+      </div>
+      <button id="addBtn" class="primary">Добавить и пересчитать</button>
+    </section>
+  </main>
+
+  <script src="app.js"></script>
+</body>
+</html>

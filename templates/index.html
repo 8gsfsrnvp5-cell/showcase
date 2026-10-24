@@ -1,0 +1,221 @@
+<!doctype html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <meta name="robots" content="noindex" />
+  <title>Проекты — живые демо</title>
+  <meta name="description" content="Рабочие демо-версии проектов: открываются в браузере, ничего устанавливать не нужно." />
+  <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='8' fill='%231f5f4a'/%3E%3Cpath d='M9 22V10h3l4 6 4-6h3v12h-3v-7l-4 6-4-6v7z' fill='%23fff'/%3E%3C/svg%3E" />
+  <style>
+    :root {
+      --bg: #f6f5f1;
+      --surface: #ffffff;
+      --surface-2: #f0eee8;
+      --ink: #191917;
+      --muted: #67655e;
+      --line: #e3e0d8;
+      --accent: #1f5f4a;
+      --accent-ink: #ffffff;
+      --shadow: 0 1px 2px rgba(25, 25, 23, .04), 0 8px 24px rgba(25, 25, 23, .06);
+      --radius: 18px;
+      color-scheme: light;
+    }
+    @media (prefers-color-scheme: dark) {
+      :root {
+        --bg: #131311;
+        --surface: #1c1c19;
+        --surface-2: #252521;
+        --ink: #f1efe9;
+        --muted: #a5a29a;
+        --line: #33322d;
+        --accent: #7fc8ad;
+        --accent-ink: #0f1f19;
+        --shadow: 0 1px 2px rgba(0, 0, 0, .3), 0 8px 24px rgba(0, 0, 0, .25);
+        color-scheme: dark;
+      }
+    }
+    * { box-sizing: border-box; }
+    html { -webkit-text-size-adjust: 100%; }
+    body {
+      margin: 0;
+      background: var(--bg);
+      color: var(--ink);
+      font: 16px/1.55 system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", sans-serif;
+    }
+    a { color: inherit; }
+    .wrap { max-width: 1120px; margin: 0 auto; padding: 0 16px; }
+
+    header { padding: 56px 0 28px; }
+    .kicker { font-size: 13px; font-weight: 600; letter-spacing: .08em; text-transform: uppercase; color: var(--accent); margin: 0 0 12px; }
+    h1 { font-size: clamp(30px, 5vw, 46px); line-height: 1.1; letter-spacing: -.02em; margin: 0 0 14px; max-width: 760px; }
+    .lead { font-size: 18px; color: var(--muted); max-width: 680px; margin: 0; }
+    .facts { display: flex; flex-wrap: wrap; gap: 8px 18px; margin: 22px 0 0; padding: 0; list-style: none; color: var(--muted); font-size: 14px; }
+    .facts li::before { content: "✓"; color: var(--accent); font-weight: 700; margin-right: 6px; }
+
+    main { padding: 8px 0 64px; }
+    .grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(min(100%, 340px), 1fr)); gap: 18px; }
+
+    .card {
+      background: var(--surface);
+      border: 1px solid var(--line);
+      border-radius: var(--radius);
+      box-shadow: var(--shadow);
+      padding: 22px 22px 20px;
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+      min-width: 0;
+    }
+    .card-top { display: flex; align-items: center; gap: 14px; }
+    .mark {
+      flex: none; width: 46px; height: 46px; border-radius: 13px;
+      display: grid; place-items: center; color: #fff; font-weight: 700; font-size: 18px; letter-spacing: -.02em;
+    }
+    .card h2 { font-size: 21px; line-height: 1.2; margin: 0; letter-spacing: -.01em; }
+    .tagline { margin: 2px 0 0; color: var(--muted); font-size: 14px; }
+    .card p.about { margin: 0; font-size: 15px; }
+    .tags { display: flex; flex-wrap: wrap; gap: 6px; margin: 0; padding: 0; list-style: none; }
+    .tags li { font-size: 12px; padding: 3px 9px; border-radius: 999px; background: var(--surface-2); color: var(--muted); }
+    .tip {
+      margin: 0; font-size: 14px; padding: 10px 12px; border-radius: 12px; background: var(--surface-2);
+      border-left: 3px solid var(--accent);
+    }
+    .tip code { font: 600 14px ui-monospace, "SF Mono", Consolas, monospace; padding: 0 5px; border-radius: 6px; background: var(--surface); }
+    .actions { display: flex; flex-wrap: wrap; gap: 8px; margin-top: auto; padding-top: 6px; }
+    .btn {
+      display: inline-flex; align-items: center; gap: 6px; min-height: 40px; padding: 8px 14px;
+      border-radius: 11px; text-decoration: none; font-weight: 600; font-size: 14px;
+      border: 1px solid var(--line); background: var(--surface); color: var(--ink);
+      transition: transform .12s ease, background-color .12s ease, border-color .12s ease;
+    }
+    .btn:hover { border-color: var(--accent); }
+    .btn:active { transform: translateY(1px); }
+    .btn.primary { background: var(--accent); border-color: var(--accent); color: var(--accent-ink); }
+    .btn.primary:hover { filter: brightness(1.06); }
+    .btn:focus-visible { outline: 3px solid color-mix(in srgb, var(--accent) 45%, transparent); outline-offset: 2px; }
+
+    .note {
+      margin-top: 28px; padding: 18px 20px; border-radius: var(--radius); border: 1px dashed var(--line);
+      color: var(--muted); font-size: 14px;
+    }
+    .note b { color: var(--ink); }
+    footer { padding: 0 0 40px; color: var(--muted); font-size: 13px; }
+
+    @media (max-width: 520px) {
+      header { padding: 36px 0 20px; }
+      .lead { font-size: 16px; }
+      .card { padding: 18px 16px 16px; }
+      .actions .btn { flex: 1 1 auto; justify-content: center; }
+    }
+  </style>
+</head>
+<body>
+  <header class="wrap">
+    <p class="kicker">Портфолио проектов</p>
+    <h1>Живые демо-версии — открываются по ссылке</h1>
+    <p class="lead">Каждый проект работает прямо в браузере: можно создавать заказы и заявки, проходить роли клиента, курьера, диспетчера или организатора. Ничего устанавливать не нужно.</p>
+    <ul class="facts">
+      <li>Работает на телефоне и компьютере</li>
+      <li>Демо-данные хранятся только в вашем браузере</li>
+      <li>Реальные данные клиентов не используются</li>
+    </ul>
+  </header>
+
+  <main class="wrap">
+    <div class="grid">
+
+      <article class="card">
+        <div class="card-top">
+          <div class="mark" style="background:#8b1e2d">Ёб</div>
+          <div>
+            <h2>Ёбанда</h2>
+            <p class="tagline">Доставка по Таджикистану</p>
+          </div>
+        </div>
+        <p class="about">Клиент заказывает доставку с телефона, агенты считают цену по времени, погоде, маршруту и ценности груза, диспетчер назначает курьера, курьер проверяет груз и везёт. Обе стороны ставят оценки.</p>
+        <ul class="tags"><li>Клиент · курьер · диспетчер</li><li>Агенты цены</li><li>Живая погода</li><li>PWA</li></ul>
+        <p class="tip">Начните с «Живого показа»: слева телефон клиента, справа стол диспетчера — заказ появляется сразу.</p>
+        <div class="actions">
+          <a class="btn primary" href="yobanda/show/">Живой показ</a>
+          <a class="btn" href="yobanda/">Презентация</a>
+          <a class="btn" href="yobanda/c/">Клиент</a>
+          <a class="btn" href="yobanda/k/">Курьер</a>
+          <a class="btn" href="yobanda/d/">Диспетчер</a>
+        </div>
+      </article>
+
+      <article class="card">
+        <div class="card-top">
+          <div class="mark" style="background:#0369a1">SS</div>
+          <div>
+            <h2>SkySeal Cargo</h2>
+            <p class="tagline">Операционная система авиагрузовой логистики</p>
+          </div>
+        </div>
+        <p class="about">Клиент оформляет заявку на перевозку груза. Десять агентов разбирают её по шагам: вес и категория груза, аэропорты, маршруты, грузовая ёмкость, себестоимость, ограничения и документы. Диспетчер видит всё в Control Tower в реальном времени.</p>
+        <ul class="tags"><li>Мультиагентный конвейер</li><li>Control Tower</li><li>Cargo Passport</li><li>Финансы и маржа</li></ul>
+        <p class="tip">Откройте обе ссылки в соседних вкладках. В заявке нажмите «Подставить демонстрационные фото» — фото груза обязательны.</p>
+        <div class="actions">
+          <a class="btn primary" href="skyseal-cargo/">Заявка клиента</a>
+          <a class="btn" href="skyseal-cargo/tower/">Control Tower</a>
+        </div>
+      </article>
+
+      <article class="card">
+        <div class="card-top">
+          <div class="mark" style="background:#a96b25">₽</div>
+          <div>
+            <h2>Копилка группы</h2>
+            <p class="tagline">Прозрачные сборы родительской группы</p>
+          </div>
+        </div>
+        <p class="about">Организатор создаёт сборы — сумма сама делится между семьями, — подтверждает оплаты и публикует расходы с чеками. Родители отмечают переводы и видят, куда ушли деньги. Ежемесячные сборы продлеваются автоматически.</p>
+        <ul class="tags"><li>Роли и коды доступа</li><li>Чеки</li><li>История действий</li></ul>
+        <p class="tip">Коды входа: организатор <code>111111</code>, родитель <code>222222</code>. Группа и семьи вымышленные.</p>
+        <div class="actions">
+          <a class="btn primary" href="kopilka/">Открыть копилку</a>
+          <a class="btn" href="kopilka-lite/">Лёгкая версия</a>
+        </div>
+      </article>
+
+      <article class="card">
+        <div class="card-top">
+          <div class="mark" style="background:#1f5f4a">BM</div>
+          <div>
+            <h2>BuildMind</h2>
+            <p class="tagline">Инженерный помощник строительного проекта</p>
+          </div>
+        </div>
+        <p class="about">Принимает документы проекта — PDF, сканы, Excel — распознаёт работы и материалы (в том числе OCR прямо в браузере), находит риски снабжения и календаря и показывает источник каждого вывода. Решение всегда за инженером.</p>
+        <ul class="tags"><li>OCR в браузере</li><li>ГПР и ВОР</li><li>Риски снабжения</li><li>Проверка инженером</li></ul>
+        <p class="tip">Можно создать проект и загрузить свои PDF или Excel — файлы не покидают ваш компьютер.</p>
+        <div class="actions">
+          <a class="btn primary" href="buildmind/">Открыть BuildMind</a>
+        </div>
+      </article>
+
+      <article class="card">
+        <div class="card-top">
+          <div class="mark" style="background:#4b5563">BP</div>
+          <div>
+            <h2>BuildMind Procurement</h2>
+            <p class="tagline">Контроль закупок стройматериалов</p>
+          </div>
+        </div>
+        <p class="about">Таблица материалов проекта: потребность, склад, резерв и поставки. Считает свободный остаток, дефицит, дату потребности и крайнюю дату заказа с учётом страхового запаса, и подсвечивает риск по каждой позиции.</p>
+        <ul class="tags"><li>Дефицит и даты заказа</li><li>Оценка риска</li><li>Экспорт JSON</li></ul>
+        <div class="actions">
+          <a class="btn primary" href="procurement/">Открыть</a>
+          <a class="btn" href="procurement-v1/">Первая версия</a>
+        </div>
+      </article>
+
+    </div>
+
+    <p class="note"><b>Как устроены демо.</b> Серверная часть каждого проекта запущена прямо в вашем браузере, поэтому всё, что вы создадите, видно только вам и сохраняется между визитами. Чтобы начать с чистого листа, достаточно открыть ссылку в режиме инкогнито.</p>
+  </main>
+
+  <footer class="wrap">Демо-сборки исходных проектов · обновлено октябрь 2026</footer>
+</body>
+</html>

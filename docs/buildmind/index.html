@@ -1,0 +1,1128 @@
+<!doctype html>
+<html lang="ru">
+<head>
+  <meta charset="utf-8" />
+  <meta name="robots" content="noindex" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>BuildMind · Инженерный контроль проекта</title>
+  <link rel="stylesheet" href="style.css?v=8" />
+</head>
+<body>
+  <header class="topbar">
+    <div>
+      <h1>BuildMind</h1>
+<p>Инженерный контроль документов, работ, материалов, сроков и рисков проекта</p>
+    </div>
+    <button id="exportBtn">Скачать JSON</button>
+  </header>
+
+  <main class="layout">
+     
+    <section
+  id="operationalControlCenter"
+  class="card operational-control-center"
+>
+  <div class="control-center-header">
+    <div>
+      <h2>Оперативный центр компании</h2>
+
+     <p class="muted">
+  Общая сводка критических рисков, закупок,
+  поставок и обеспеченности по всем проектам,
+  объектам и работам компании.
+</p>
+    </div>
+
+    <div class="control-analysis-date">
+      Дата анализа:
+      <strong id="controlAnalysisDate">—</strong>
+    </div>
+  </div>
+
+  <div class="control-summary">
+    <button
+      type="button"
+      class="control-summary-item control-critical"
+      data-control-filter="critical"
+    >
+      <strong id="criticalCount">0</strong>
+      <span>Критические</span>
+    </button>
+
+    <button
+      type="button"
+      class="control-summary-item control-order"
+      data-control-filter="order"
+    >
+      <strong id="warningCount">0</strong>
+      <span>Нужно заказать</span>
+    </button>
+
+    <button
+      type="button"
+      class="control-summary-item control-low-stock"
+      data-control-filter="low-stock"
+    >
+      <strong id="lowStockCount">0</strong>
+      <span>Заканчиваются</span>
+    </button>
+
+    <button
+      type="button"
+      class="control-summary-item control-expected"
+      data-control-filter="expected"
+    >
+      <strong id="expectedDeliveryCount">0</strong>
+      <span>Ожидаемые поставки</span>
+    </button>
+
+    <button
+      type="button"
+      class="control-summary-item control-delayed"
+      data-control-filter="delayed"
+    >
+      <strong id="delayedDeliveryCount">0</strong>
+      <span>Задерживаются</span>
+    </button>
+
+    <button
+      type="button"
+      class="control-summary-item control-ok"
+      data-control-filter="ok"
+    >
+      <strong id="okCount">0</strong>
+      <span>Обеспечено</span>
+    </button>
+  </div>
+
+  <div class="control-toolbar">
+    <label>
+      Показать
+      <select id="controlStatusFilter">
+        <option value="all">Все активные события</option>
+        <option value="critical">Критические</option>
+        <option value="order">Нужно заказать</option>
+        <option value="low-stock">Заканчиваются</option>
+        <option value="expected">Ожидаемые поставки</option>
+        <option value="delayed">Задерживаются</option>
+        <option value="ok">Обеспечено</option>
+      </select>
+    </label>
+
+    <label>
+      Проект
+      <select id="controlProjectFilter">
+        <option value="all">Все проекты</option>
+      </select>
+    </label>
+
+    <label>
+      Объект
+      <select id="controlObjectFilter">
+        <option value="all">Все объекты</option>
+      </select>
+    </label>
+  </div>
+
+  <div class="control-events-header">
+    <h3>Активные события и рекомендации</h3>
+
+    <span id="controlEventsTotal">
+      Найдено событий: 0
+    </span>
+  </div>
+
+  <div
+    id="controlEventsList"
+    class="control-events-list"
+  >
+    <div class="control-empty-state">
+      Данные анализируются. Здесь появятся критические
+      материалы, закупки и поставки.
+    </div>
+  </div>
+</section>
+    
+ <section
+  id="projectDataSection"
+  class="card"
+>
+  <h2>Данные проекта</h2>
+
+  <p class="muted">
+    Общие даты относятся ко всему проекту. Сроки отдельных работ задаются ниже в контекстах работ.
+  </p>
+
+  <div class="grid">
+    <label>
+      Проект
+     <input
+  id="projectName"
+  placeholder="Введите название проекта"
+/>
+    </label>
+
+    <label>
+      Объект
+      <input
+  id="objectName"
+  placeholder="Введите объект"
+/>
+    </label>
+
+    <label>
+      Общее начало проекта по ГПР
+      <input
+  id="projectStartDate"
+  type="date"
+/>
+    </label>
+
+    <label>
+      Общее окончание проекта по ГПР
+     <input
+  id="projectEndDate"
+  type="date"
+/>
+    </label>
+
+    <label>
+      Дата анализа
+     <input
+  id="todayDate"
+  type="date"
+/>
+    </label>
+  </div>
+
+  <!--
+    Временные технические поля.
+    Их пока использует app.js для расчёта материалов.
+    Не удалять до подключения расчётов к выбранному контексту.
+  -->
+ <div style="display: none;" aria-hidden="true">
+  <input
+    id="workName"
+    value=""
+  />
+
+  <input
+    id="workStartDate"
+    type="date"
+    value=""
+  />
+
+  <input
+    id="safetyDays"
+    type="number"
+    value="0"
+    min="0"
+  />
+</div>
+
+  <button
+  id="newCleanProjectBtn"
+  type="button"
+  class="secondary-btn"
+>
+  Новый чистый проект
+</button>
+
+<button id="recalcBtn" class="primary">
+  Пересчитать риски
+</button>
+</section>
+
+<section
+  id="projectCoreSection"
+  class="card project-core-card"
+>
+  <div class="project-core-header">
+    <div>
+      <span class="project-core-eyebrow">
+        СТРУКТУРА ПРОЕКТА · V1
+      </span>
+
+      <h2>Паспорт и структура проекта</h2>
+
+      <p class="muted">
+        Главный проект получает постоянный ID.
+        Связанные проекты, разделы и пакеты добавляются
+        внутрь него без перезаписи истории.
+      </p>
+    </div>
+
+    <div class="project-core-active-box">
+      <span>Активный узел анализа</span>
+      <strong id="projectCoreActiveLabel">—</strong>
+    </div>
+  </div>
+
+  <div class="project-core-grid">
+
+    <div class="project-core-panel">
+      <h3>Главный проект</h3>
+
+      <div id="projectCoreRootSummary"></div>
+
+      <div class="project-core-form-grid">
+        <label>
+          Шифр / код проекта
+
+          <input
+            id="projectCoreCode"
+            placeholder="Например: АСУДД-01"
+          />
+        </label>
+
+        <label>
+          Договор / контракт
+
+          <input
+            id="projectCoreContract"
+            placeholder="Номер договора — при наличии"
+          />
+        </label>
+      </div>
+
+      <button
+        type="button"
+        id="saveProjectCoreBtn"
+        class="primary project-core-save-btn"
+      >
+        Сохранить паспорт проекта
+      </button>
+    </div>
+
+
+    <div class="project-core-panel">
+      <div class="project-core-panel-head">
+        <h3>Связанные проекты / пакеты</h3>
+
+        <span class="project-core-count-badge">
+          <strong id="projectCoreLinkedCount">0</strong>
+        </span>
+      </div>
+
+      <div
+        id="projectCoreLinkedList"
+        class="project-core-linked-list"
+      ></div>
+
+      <div class="project-core-add-linked">
+
+        <label>
+          Название
+
+          <input
+            id="linkedProjectName"
+            placeholder="Например: Дорожное освещение"
+          />
+        </label>
+
+        <label>
+          Шифр / раздел
+
+          <input
+            id="linkedProjectCode"
+            placeholder="Например: РД-04-НО"
+          />
+        </label>
+
+        <label>
+          Объект / участок
+
+          <input
+            id="linkedProjectObject"
+            placeholder="Можно оставить пустым"
+          />
+        </label>
+
+        <button
+          type="button"
+          id="addLinkedProjectBtn"
+          class="secondary-btn"
+        >
+          + Добавить связанный проект
+        </button>
+
+      </div>
+    </div>
+
+  </div>
+
+
+  <div class="project-core-active-select-wrap">
+    <label>
+      Активный проект / пакет
+      для новых документов
+
+      <select id="projectCoreActiveNode">
+        <option value="">
+          Не выбран
+        </option>
+      </select>
+    </label>
+  </div>
+
+
+  <p
+    id="projectCoreMessage"
+    class="project-core-message"
+  >
+    Сохраните главный проект,
+    затем добавляйте связанные пакеты
+    по мере появления документации.
+  </p>
+
+  <p
+    id="projectCoreArchiveMessage"
+    class="project-core-archive-message"
+    aria-live="polite"
+  ></p>
+</section>
+    
+<section
+  id="projectDocumentsSection"
+  class="card documents-card"
+>
+  <div class="documents-header">
+    <div>
+      <h2>Загруженные документы</h2>
+
+<p class="muted">
+  Здесь остаются файлы текущей браузерной сессии: проектная
+  документация, ВОР, ГПР, спецификации, сметы, коммерческие
+  предложения и связанные документы. Автоматический анализ
+  выполняется в блоке выше.
+</p>
+    </div>
+
+    <span
+      id="documentsCount"
+      class="documents-count"
+    >
+      0 файлов
+    </span>
+  </div>
+
+  <div
+    id="documentsDropZone"
+    class="documents-drop-zone"
+    tabindex="0"
+  >
+    <input
+      id="projectDocumentsInput"
+      type="file"
+      accept=".pdf,.xlsx,.xls,.csv"
+      multiple
+      hidden
+    />
+
+    <button
+      type="button"
+      id="selectDocumentsBtn"
+      class="primary documents-select-btn"
+    >
+      Выбрать документы
+    </button>
+
+    <p>
+      или перетащите файлы в эту область
+    </p>
+
+    <small>
+      Поддерживаются PDF, XLSX, XLS и CSV.
+      Файлы пока не отправляются на сервер.
+      После выбора назначьте каждому файлу тип и нажмите «Анализировать сейчас».
+    </small>
+  </div>
+
+ <div class="documents-toolbar">
+  <p
+    id="documentsMessage"
+    class="documents-message"
+  >
+    Файлы пока не выбраны.
+  </p>
+
+  <div class="documents-actions">
+    <button
+      type="button"
+      id="analyzeUploadedDocumentsBtn"
+      class="primary"
+      disabled
+    >
+      Анализировать сейчас
+    </button>
+
+    <button
+      type="button"
+      id="clearDocumentsBtn"
+      class="secondary-btn"
+      disabled
+    >
+      Очистить список
+    </button>
+  </div>
+</div>
+
+  <div
+    id="documentsList"
+    class="documents-list"
+  ></div>
+</section>
+
+    <section
+  id="documentRegistrySection"
+  class="card document-registry-card"
+>
+  <div class="document-registry-header">
+    <div>
+      <span class="document-registry-eyebrow">
+        ДОКУМЕНТЫ ПРОЕКТА · V1
+      </span>
+
+      <h2>Реестр документов и редакций</h2>
+
+      <p class="muted">
+  Новая редакция не стирает предыдущую.
+  BuildMind сохраняет историю документа и статус
+  каждой полученной редакции.
+</p>
+    </div>
+
+
+    <div class="document-registry-summary">
+
+      <div>
+        <strong id="documentRegistryDocumentsCount">
+          0
+        </strong>
+        <span>Документов</span>
+      </div>
+
+      <div>
+        <strong id="documentRegistryRevisionsCount">
+          0
+        </strong>
+        <span>Редакций</span>
+      </div>
+
+      <div>
+        <strong id="documentRegistryCurrentCount">
+          0
+        </strong>
+        <span>Действующих</span>
+      </div>
+
+      <div>
+        <strong id="documentRegistryReviewCount">
+          0
+        </strong>
+        <span>На проверке</span>
+      </div>
+
+    </div>
+  </div>
+
+
+  <div class="document-registry-flow">
+  <span>ПОЛУЧЕН</span>
+  <b>→</b>
+  <span>НА ПРОВЕРКЕ</span>
+  <b>→</b>
+  <span>ДЕЙСТВУЮЩИЙ</span>
+  <b>→</b>
+  <span>ЗАМЕНЁН / АННУЛИРОВАН</span>
+</div>
+
+
+  <div class="document-registry-form">
+
+    <div class="document-registry-form-grid">
+
+      <label>
+        Загруженный файл
+
+        <select id="documentRegistryUploadSelect">
+          <option value="">
+            Сначала загрузите файл выше
+          </option>
+        </select>
+      </label>
+
+
+      <label>
+        Режим регистрации
+
+        <select id="documentRegistryMode">
+          <option value="new">
+            Новый логический документ
+          </option>
+
+          <option value="revision">
+            Новая редакция существующего
+          </option>
+        </select>
+      </label>
+
+
+      <label
+        id="documentRegistryExistingWrap"
+        class="hidden"
+      >
+        Существующий документ
+
+        <select id="documentRegistryExistingDocument">
+          <option value="">
+            Выберите документ
+          </option>
+        </select>
+      </label>
+
+
+      <label>
+        Логическое название
+
+        <input
+          id="documentRegistryLogicalTitle"
+          placeholder="Например: Основной ВОР"
+        />
+      </label>
+
+
+      <label>
+        Тип документа
+
+        <select id="documentRegistryKind">
+          <option value="project-documentation">
+            Проектная / рабочая документация
+          </option>
+
+          <option value="work-volume">
+            Ведомость объёмов работ
+          </option>
+
+          <option value="schedule">
+            График производства работ
+          </option>
+
+          <option value="specification">
+            Спецификация
+          </option>
+
+          <option value="agreement">
+            Дополнительное соглашение
+          </option>
+
+          <option value="estimate">
+  Сметная документация
+</option>
+
+<option value="commercial-proposal">
+  Коммерческое предложение
+</option>
+
+<option value="journal">
+            Журнал / ведомость
+          </option>
+
+          <option value="other">
+            Другой документ
+          </option>
+        </select>
+      </label>
+
+
+      <label>
+        Редакция
+
+        <input
+          id="documentRegistryRevisionLabel"
+          placeholder="Например: Изм.1, Редакция 2, Версия 3"
+        />
+      </label>
+
+
+      <label>
+        Характер изменения
+
+        <select
+          id="documentRegistryRelationType"
+          disabled
+        >
+          <option value="replaces">
+            Заменяет предыдущую редакцию
+          </option>
+
+          <option value="amends">
+            Изменяет / корректирует
+          </option>
+
+          <option value="cancels">
+            Отменяет
+          </option>
+        </select>
+      </label>
+
+    </div>
+
+
+    <div class="document-registry-projects-block">
+      <strong>
+        К каким проектам / пакетам
+        относится эта редакция
+      </strong>
+
+      <div
+        id="documentRegistryProjectNodes"
+        class="document-registry-project-choices"
+      ></div>
+    </div>
+
+
+    <label class="document-registry-notes-label">
+      Комментарий к редакции
+
+      <textarea
+        id="documentRegistryNotes"
+        rows="3"
+        placeholder="Основание, письмо, допсоглашение, примечание инженера"
+      ></textarea>
+    </label>
+
+
+    <div class="document-registry-form-actions">
+      <button
+        type="button"
+        id="registerDocumentRevisionBtn"
+        class="primary"
+      >
+        Зарегистрировать редакцию
+      </button>
+
+      <p
+        id="documentRegistryMessage"
+        class="document-registry-message"
+      >
+        Файл сначала регистрируется
+        как «Получен» и не становится
+        действующим автоматически.
+      </p>
+    </div>
+
+  </div>
+
+
+  <div class="document-registry-warning">
+    <strong>
+      История не удаляется.
+    </strong>
+
+    При утверждении новой редакции
+    предыдущая действующая версия
+    получает статус «Заменён».
+
+    Метаданные сохраняются локально;
+    сам файл после перезагрузки браузера
+    потребуется выбрать повторно
+    для нового анализа.
+  </div>
+
+
+  <div
+    id="documentRegistryList"
+    class="document-registry-list"
+  ></div>
+</section>
+    
+<section class="card assistant-card">
+  <h2>Командное окно BuildMind</h2>
+  <p class="muted">
+    Напишите команду простым языком. Например: “Покажи материалы с дефицитом”.
+  </p>
+
+  <textarea
+    id="assistantInput"
+    rows="4"
+    placeholder="Например: покажи материалы с дефицитом"
+  ></textarea>
+
+  <div class="assistant-actions">
+   <button type="button" id="askAssistantBtn" onclick="runBuildMindAssistant()">
+  Спросить BuildMind
+</button>
+
+<button type="button" id="clearAssistantBtn" class="secondary-btn" onclick="clearBuildMindAssistant()">
+  Очистить ответ
+</button>
+  </div>
+
+  <div id="assistantAnswer" class="assistant-answer">
+    Здесь появится ответ BuildMind.
+  </div>
+</section>
+    
+    <section
+  id="materialsTableSection"
+  class="card"
+>
+      <h2>Материалы</h2>
+      <div class="table-wrap">
+        <table id="materialsTable">
+          <thead>
+            <tr>
+              <th>Проект</th>
+              <th>Объект</th>
+              <th>Работа</th>
+              <th>Материал</th>
+              <th>Ответственный</th>
+              <th>Нужно</th>
+              <th>Ед.</th>
+              <th>Общий остаток</th>
+              <th>Резерв</th>
+              <th>Свободно</th>
+              <th>Подтверждено</th>
+              <th>Дата поставки</th>
+              <th>Срок, дней</th>
+              <th>Дефицит</th>
+              <th>Дата потребности</th>
+              <th>Крайняя дата заказа</th>
+              <th>Риск</th>
+              <th>Действие</th>
+              <th>Управление</th>
+            </tr>
+          </thead>
+          <tbody></tbody>
+        </table>
+      </div>
+    </section>
+
+    <section
+  id="materialManagementSection"
+  class="card"
+>
+      <section class="context-layout">
+  <div class="card current-context-card">
+   <h2>Текущий контекст контроля</h2>
+
+<p>
+  <strong>Проект:</strong>
+  <span id="currentProject">—</span>
+</p>
+
+<p>
+  <strong>Объект:</strong>
+  <span id="currentObject">—</span>
+</p>
+
+<p>
+  <strong>Работа:</strong>
+  <span id="currentWork">—</span>
+</p>
+
+<p>
+  <strong>Начало по ГПР:</strong>
+  <span id="currentStartDate">—</span>
+</p>
+
+<p>
+  <strong>Окончание по ГПР:</strong>
+  <span id="currentEndDate">—</span>
+</p>
+
+<p>
+  <strong>Страховой запас:</strong>
+  <span id="currentSafetyDays">—</span>
+</p>
+
+<div class="active-context-safety-control">
+  <label>
+    Изменить страховой запас, дней
+    <input
+      id="activeContextSafetyDaysInput"
+      type="number"
+      min="0"
+      value="2"
+    />
+  </label>
+  <button
+    type="button"
+    class="secondary-btn"
+    onclick="saveActiveContextSafetyDays()"
+  >
+    Сохранить запас
+  </button>
+  <small id="activeContextSafetyMessage" class="muted">
+    Запас вычитается из даты начала работы при расчёте даты потребности.
+  </small>
+</div>
+  </div>
+
+ <div class="card work-contexts-card">
+  <h2>Контексты работ</h2>
+
+ <p class="muted">
+  Проект и объект берутся из данных проекта. Выберите работу, после чего форма материала заполнится автоматически.
+</p>
+
+  <div id="contextsList" class="contexts-list"></div>
+
+  <button
+    type="button"
+    class="add-context-btn"
+    onclick="openContextForm()"
+  >
+    + Добавить контекст
+  </button>
+
+  <div id="contextForm" class="context-form hidden">
+    <h3>Новый контекст работы</h3>
+
+    <label>
+      Проект
+     <input id="contextProject" readonly />
+    </label>
+
+    <label>
+      Объект
+      <input id="contextObject" readonly />
+    </label>
+
+    <label>
+      Работа
+      <input id="contextWork" />
+    </label>
+
+  <label>
+  Начало работы по ГПР
+  <input id="contextStartDate" type="date" />
+</label>
+
+<label>
+  Окончание работы по ГПР
+  <input id="contextEndDate" type="date" />
+</label>
+
+<label>
+  Страховой запас, дней
+  <input
+    id="contextSafetyDays"
+    type="number"
+    min="0"
+    value="2"
+  />
+</label>
+
+    <div class="context-form-actions">
+      <button type="button" onclick="addWorkContext()">
+        Сохранить контекст
+      </button>
+
+      <button
+        type="button"
+        class="secondary-btn"
+        onclick="closeContextForm()"
+      >
+        Отмена
+      </button>
+    </div>
+  </div>
+</div>
+</section>
+      <h2 id="materialFormTitle">Добавить материал</h2>
+
+      <p
+        id="materialFormMessage"
+        class="muted"
+      >
+        Новая позиция получит постоянный ID. Все дальнейшие изменения будут сохранены в истории.
+      </p>
+
+      <div class="grid add-grid">
+       <label>
+  Проект
+  <input id="newProject" readonly />
+</label>
+
+<label>
+  Объект
+  <input id="newObject" readonly />
+</label>
+
+<label>
+  Работа
+  <input id="newWork" readonly />
+</label>
+        <label>Материал<input id="newName" /></label>
+        <label>Ответственный<input id="newResponsible" /></label>
+        <label>Нужно<input id="newNeed" type="number" /></label>
+        <label>Ед.
+          <select id="newUnit">
+    <option value="шт">шт — штуки</option>
+    <option value="м">м — метры</option>
+    <option value="п.м.">п.м. — погонные метры</option>
+    <option value="м²">м² — квадратные метры</option>
+    <option value="м³">м³ — кубические метры</option>
+    <option value="т">т — тонны</option>
+    <option value="кг">кг — килограммы</option>
+    <option value="л">л — литры</option>
+    <option value="компл.">компл. — комплекты</option>
+    <option value="рул.">рул. — рулоны</option>
+    <option value="меш.">меш. — мешки</option>
+    <option value="упак.">упак. — упаковки</option>
+    <option value="кор.">кор. — коробки</option>
+  </select>
+</label>
+
+        <label>Общий остаток<input id="newStock" type="number" /></label>
+        <label>Резерв<input id="newReserved" type="number" /></label>
+        <label>Подтверждено поставщиком<input id="newConfirmed" type="number" value="0" /></label>
+        <label>Дата поставки<input id="newDelivery" type="date" /></label>
+        <label>Срок поставки, дней<input id="newLead" type="number" value="1" /></label>
+
+        <label class="material-change-reason-field">
+          Комментарий к добавлению или изменению
+          <input
+            id="materialChangeReason"
+            placeholder="Например: уточнено по новой редакции ВОР"
+          />
+        </label>
+      </div>
+
+      <div class="material-form-actions">
+        <button id="addBtn" class="primary">Добавить и пересчитать</button>
+
+        <button
+          id="cancelMaterialEditBtn"
+          type="button"
+          class="secondary hidden"
+        >
+          Отменить редактирование
+        </button>
+
+        <button id="resetBtn" class="secondary">Исключить все активные</button>
+      </div>
+    </section>
+
+    <section
+      id="materialArchiveSection"
+      class="card"
+    >
+      <h2>
+        Архив материалов
+        <span class="muted">(<span id="materialArchiveCount">0</span>)</span>
+      </h2>
+
+      <p class="muted">
+        Исключённые позиции не участвуют в расчётах, но сохраняются и могут быть восстановлены.
+      </p>
+
+      <p id="materialArchiveEmpty" class="muted">
+        Исключённых материалов пока нет.
+      </p>
+
+      <div class="table-wrap">
+        <table id="materialArchiveTable">
+          <thead>
+            <tr>
+              <th>Проект</th>
+              <th>Работа</th>
+              <th>Материал</th>
+              <th>Количество</th>
+              <th>Ед.</th>
+              <th>Исключён</th>
+              <th>Причина</th>
+              <th>Управление</th>
+            </tr>
+          </thead>
+          <tbody></tbody>
+        </table>
+      </div>
+    </section>
+
+    <section
+      id="materialHistorySection"
+      class="card"
+    >
+      <h2>
+        История изменений материалов
+        <span class="muted">(<span id="materialHistoryCount">0</span>)</span>
+      </h2>
+
+      <p class="muted">
+        BuildMind сохраняет добавление, корректировку, исключение и восстановление. Показываются последние 100 событий.
+      </p>
+
+      <p id="materialHistoryEmpty" class="muted">
+        История пока пуста.
+      </p>
+
+      <div class="table-wrap">
+        <table id="materialHistoryTable">
+          <thead>
+            <tr>
+              <th>Дата и время</th>
+              <th>Событие</th>
+              <th>Материал</th>
+              <th>Изменение</th>
+              <th>Основание</th>
+              <th>Роль</th>
+            </tr>
+          </thead>
+          <tbody></tbody>
+        </table>
+      </div>
+    </section>
+  </main>
+  <script type="module">
+  import * as pdfjsLib from
+    './vendor/pdfjs/pdf.min.mjs';
+
+  pdfjsLib.GlobalWorkerOptions.workerSrc =
+    './vendor/pdfjs/pdf.worker.min.mjs';
+
+  window.pdfjsLib = pdfjsLib;
+</script>
+
+<script src="vendor/xlsx/xlsx.full.min.js"></script>
+<script src="vendor/tesseract/tesseract.min.js"></script>
+
+  <script src="i18n.js?v=1"></script>
+  
+<script src="roadKnowledgeBase.js?v=2"></script>
+<script src="planningRules.js?v=2"></script>
+<script src="engineeringAudit.js?v=1"></script>
+
+<script src="projectSession.js?v=2"></script>
+<script src="compositePdfEngine.js?v=3"></script>
+<script src="pdfOcrEngine.js?v=5"></script>
+<script src="procurementRiskEngine.js?v=1"></script>
+<script src="app.js?v=19"></script>
+
+<script src="projectCore.js?v=2"></script>
+<script src="documentRegistry.js?v=4"></script>
+
+<script src="assistantEngine.js?v=1"></script>
+<script src="workContexts.js?v=2"></script>
+<script src="workTaxonomy.js?v=1"></script>
+<script src="workMatcher.js?v=5"></script>
+<script src="workVolumeEngine.js?v=5"></script>
+<script src="pdfTableEngine.js?v=5"></script>
+<script src="workQuantityEngine.js?v=3"></script>
+<script src="planningEngine.js?v=4"></script>
+
+<script src="agentContracts.js?v=1"></script>
+<script src="agentOrchestrator.js?v=2"></script>
+<script src="projectIntakeQuality.js?v=9"></script>
+<script src="projectIntake.js?v=17"></script>
+<script src="projectAnalysisBridge.js?v=3"></script>
+<script src="truthReview.js?v=1"></script>
+<script src="procurementIntegration.js?v=1"></script>
+<script src="changeSetEngine.js?v=2"></script>
+<script src="workspace.js?v=8"></script>
+      
+</body>
+</html>
+ 
