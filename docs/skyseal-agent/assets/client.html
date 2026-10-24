@@ -1,0 +1,111 @@
+<!doctype html>
+<html lang="ru">
+<head>
+  <meta charset="utf-8">
+  <meta name="robots" content="noindex" />
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <meta name="theme-color" content="#071a2d">
+  <title>SkySeal — грузовая доставка</title>
+  <link rel="manifest" href="manifest.webmanifest">
+  <link rel="stylesheet" href="assets/styles.css">
+</head>
+<body class="client-body">
+  <div class="toast-stack"></div>
+  <header class="client-header">
+    <a class="brand" href="./"><span class="brand-mark">S</span><span>SkySeal</span></a>
+    <span class="live-pill"><i></i> система доступна</span>
+  </header>
+  <main class="client-shell">
+    <section class="hero">
+      <p class="eyebrow">АВИАЦИОННАЯ ГРУЗОВАЯ ЛОГИСТИКА</p>
+      <h1>От заявки до доставки — в одном окне</h1>
+      <p>Опишите груз и приложите фотографии. SkySeal подготовит цифровой паспорт, варианты маршрута и несколько проверенных предложений по цене и сроку.</p>
+      <div class="hero-steps"><span>01 Заявка</span><span>02 Проверка</span><span>03 Выбор варианта</span><span>04 Доставка</span></div>
+    </section>
+
+    <nav class="segmented" aria-label="Разделы">
+      <button class="active" data-client-tab="new">Новая заявка</button>
+      <button data-client-tab="track">Мои перевозки <b id="savedCount">0</b></button>
+    </nav>
+
+    <section id="newTab">
+      <form id="shipmentForm" class="stack-form">
+        <article class="form-card">
+          <div class="card-heading"><span>01</span><div><h2>Маршрут</h2><p>Откуда забрать и куда доставить</p></div></div>
+          <div class="field-grid two">
+            <div class="location-box">
+              <h3><i class="dot origin"></i> Отправление</h3>
+              <label>Страна<select name="origin_country" required><option value="RU">Россия</option><option value="KZ">Казахстан</option><option value="UZ">Узбекистан</option><option value="TJ">Таджикистан</option><option value="KG">Кыргызстан</option><option value="CN">Китай</option><option value="AF">Афганистан</option></select></label>
+              <label>Город<input name="origin_city" value="Москва" required></label>
+              <label>Адрес<input name="origin_address" placeholder="Улица, дом, склад" required></label>
+            </div>
+            <div class="location-box">
+              <h3><i class="dot destination"></i> Назначение</h3>
+              <label>Страна<select name="destination_country" required><option value="TJ">Таджикистан</option><option value="UZ">Узбекистан</option><option value="KZ">Казахстан</option><option value="KG">Кыргызстан</option><option value="CN">Китай</option><option value="RU">Россия</option><option value="AF">Афганистан</option></select></label>
+              <label>Город<input name="destination_city" value="Душанбе" required></label>
+              <label>Адрес<input name="destination_address" placeholder="Аэропорт, терминал или адрес" required></label>
+            </div>
+          </div>
+          <div class="field-grid two compact-top">
+            <label>Режим доставки<select name="delivery_mode"><option value="door_to_door">Адрес → адрес</option><option value="door_to_airport">Адрес → аэропорт</option><option value="airport_to_airport">Аэропорт → аэропорт</option><option value="airport_to_door">Аэропорт → адрес</option></select></label>
+            <label>Приоритет заявки<select name="tariff"><option value="standard">Обычный срок</option><option value="economy">Гибкая дата — важнее цена</option><option value="express">Срочно — важнее скорость</option><option value="charter">Рассмотреть отдельный чартер</option></select><small>Это пожелание, а не ограничение: диспетчер сможет предложить несколько вариантов.</small></label>
+          </div>
+        </article>
+
+        <article class="form-card">
+          <div class="card-heading"><span>02</span><div><h2>Груз</h2><p>Данные для расчёта веса, объёма и ограничений</p></div></div>
+          <div class="field-grid two">
+            <label>Название груза<input name="cargo_name" placeholder="Например: промышленные запчасти" required></label>
+            <label>Количество мест<input type="number" name="pieces" value="1" min="1" required></label>
+          </div>
+          <label>Описание<textarea name="description" rows="3" placeholder="Что находится внутри, назначение и состав" required></textarea></label>
+          <div class="metric-grid">
+            <label>Вес, кг<input type="number" name="weight_kg" min="0.01" step="0.01" required></label>
+            <label>Длина, см<input type="number" name="length_cm" min="0.1" step="0.1" required></label>
+            <label>Ширина, см<input type="number" name="width_cm" min="0.1" step="0.1" required></label>
+            <label>Высота, см<input type="number" name="height_cm" min="0.1" step="0.1" required></label>
+          </div>
+          <div class="field-grid two compact-top">
+            <label>Заявленная стоимость<input type="number" name="declared_value" min="0" value="0" required></label>
+            <label>Валюта<select name="declared_currency"><option>RUB</option><option>USD</option><option>EUR</option><option>CNY</option><option>TJS</option><option>KGS</option><option>KZT</option><option>UZS</option></select></label>
+          </div>
+          <label>Особенности<textarea name="features" rows="2" placeholder="Хрупкий, температурный режим, батареи и другое"></textarea></label>
+        </article>
+
+        <article class="form-card">
+          <div class="card-heading"><span>03</span><div><h2>Фотографии</h2><p>Обязательная фиксация товара и упаковки</p></div></div>
+          <div class="photo-grid">
+            <label class="upload-zone"><input id="productPhotos" type="file" accept="image/jpeg,image/png,image/webp" capture="environment" multiple required><strong>Фото товара</strong><span>Камера или галерея</span><em id="productCount">Не выбрано</em></label>
+            <label class="upload-zone"><input id="packagingPhotos" type="file" accept="image/jpeg,image/png,image/webp" capture="environment" multiple required><strong>Фото упаковки</strong><span>Все стороны и маркировка</span><em id="packagingCount">Не выбрано</em></label>
+          </div>
+          <p class="security-note">Фото хранятся под случайными именами и доступны только по защищённой ссылке заявки.</p>
+        </article>
+
+        <article class="form-card">
+          <div class="card-heading"><span>04</span><div><h2>Контакт</h2><p>Кому диспетчер отправит предложение</p></div></div>
+          <div class="field-grid two">
+            <label>Имя или компания<input name="client_name" required></label>
+            <label>Телефон<input name="client_phone" type="tel" placeholder="+7 999 000-00-00" required></label>
+          </div>
+          <label>Email — необязательно<input name="client_email" type="email"></label>
+        </article>
+
+        <label class="consent"><input type="checkbox" required><span>Подтверждаю достоверность данных. Понимаю, что расчёт и проверка ограничений требуют подтверждения специалиста.</span></label>
+        <button id="submitButton" class="primary big" type="submit">Создать заявку <span>→</span></button>
+      </form>
+    </section>
+
+    <section id="trackTab" class="hidden">
+      <div id="ordersList" class="orders-list"></div>
+      <article id="trackingCard" class="tracking-card hidden"></article>
+      <form id="manualTrack" class="manual-track">
+        <h2>Открыть заявку по защищённой ссылке</h2>
+        <div class="field-grid two"><label>Номер заявки<input name="reference" placeholder="SS-20260827-0001" required></label><label>Код доступа<input name="token" type="password" required></label></div>
+        <button class="secondary" type="submit">Открыть</button>
+      </form>
+    </section>
+  </main>
+  <footer>SkySeal OS · Предварительные расчёты требуют подтверждения оператора и перевозчика.</footer>
+  <script type="module" src="assets/client.js"></script>
+</body>
+</html>

@@ -11,6 +11,9 @@
 | `/yobanda/` | yobanda | `PAGES_BASE=/showcase/yobanda/ npm run build:pages` (ветка `demo/pages`) |
 | `/skyseal-cargo/` | skyseal-cargo | `PAGES_BASE=/showcase/skyseal-cargo/ npm run build:demo` (ветка `demo/pages`) |
 | `/kopilka/` | kopilka-gruppy-1 | `node scripts/build-demo.mjs` (ветка `demo/pages`) |
+| `/skyseal-agent/` | skyseal-agent (SkySeal OS, Python на Pyodide) | `python build_static_demo.py` (ветка `demo/pages`) |
+| `/aero-cargo/` | aero-cargo-ai (ветка `feat/cargo-passport` + демо) | `python build_static_demo.py` (ветка `demo/pages`) |
+| `/buildmind-platform/` | buildmind-platform | `npm run build:demo` (ветка `demo/pages`) |
 | `/kopilka-lite/` | kopilka-gruppy + демо-бэкенд из kopilka-gruppy-1 | собирает `assemble.mjs` |
 | `/buildmind/` | buildmind-core (ветка `agent/core-truth-contract-v1`) | статические файлы как есть |
 | `/procurement/`, `/procurement-v1/` | buildmind-procurement-mvp2, архив из BuildMind-procurement-mvp | статические файлы как есть |

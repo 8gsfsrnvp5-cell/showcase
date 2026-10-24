@@ -1,0 +1,21 @@
+import { chromium } from 'playwright-core';
+const BASE = 'http://localhost:4600/showcase/skyseal-agent/';
+const browser = await chromium.launch({ executablePath: 'C:/Program Files/Google/Chrome/Application/chrome.exe', headless: true });
+const ctx = await browser.newContext();
+const a = await ctx.newPage();
+await a.goto(BASE + 'tower');
+await a.waitForSelector('.skyseal-demo-overlay', { state: 'detached', timeout: 60000 });
+console.log('tower ready');
+const b = await ctx.newPage();
+const logs = [];
+b.on('console', m => logs.push(m.type() + ': ' + m.text()));
+b.on('pageerror', e => logs.push('pageerror: ' + e.message));
+await b.addInitScript(() => {
+  const OrigSW = window.SharedWorker;
+  window.SharedWorker = function (...args) { const w = new OrigSW(...args); w.onerror = (e) => console.log('sharedworker error', e.message); const p = w.port; const add = p.addEventListener.bind(p); console.log('created shared worker'); setTimeout(() => console.log('after 3s'), 3000); return w; };
+});
+await b.goto(BASE);
+await b.waitForTimeout(6000);
+console.log(await b.evaluate(() => document.querySelector('.skyseal-demo-overlay .msg')?.textContent));
+console.log(logs.join('\n'));
+await browser.close();

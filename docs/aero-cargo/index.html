@@ -1,0 +1,113 @@
+<!doctype html>
+<html lang="ru">
+  <head>
+    <meta charset="utf-8" />
+  <script>(function(){var q=new URLSearchParams(location.search),p=q.get('__path');if(p===null)return;q.delete('__path');var s=q.toString();history.replaceState(null,'',location.pathname.replace(/\/$/,'')+p+(s?'?'+s:'')+location.hash)})();</script>
+  <meta name="robots" content="noindex" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>AERO CARGO AI — локальный продукт P1.2</title>
+    <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='8' fill='%230f9f89'/%3E%3Cpath d='M16 7l7.5 18h-3.3l-1.6-4h-5.2l-1.6 4H8.5zm0 6.2L14.3 18h3.4z' fill='%23fff'/%3E%3C/svg%3E" />
+    <link rel="stylesheet" href="assets/styles.css" />
+    <link rel="stylesheet" href="assets/demo.css" />
+  </head>
+  <body>
+    <main class="login-page" id="login-view">
+      <section class="login-story" aria-label="О продукте">
+        <div class="brand brand-light"><span class="brand-mark">A</span><span><strong>AERO CARGO</strong><small>AI COMMAND CENTER</small></span></div>
+        <div class="story-copy">
+          <span class="status-chip"><i></i> Python P1.2 работает локально</span>
+          <h1>От паспорта груза до подтверждённой ёмкости — в едином контуре.</h1>
+          <p>Фотографии, PDF, проверка белого списка, решение оператора и ручной ответ перевозчика. Данные остаются на вашем компьютере.</p>
+        </div>
+        <div class="principle-strip"><span>DATA</span><b>+</b><span>RULES</span><b>+</b><span>HUMAN CONTROL</span></div>
+      </section>
+      <section class="login-panel">
+        <div class="login-card">
+          <span class="eyebrow">Автономный вход</span><h2>Добро пожаловать</h2>
+          <p class="muted">Никакого Docker и установки пакетов. Всё работает через Python.</p>
+          <form class="login-form" id="login-form">
+            <label><span>Рабочий email</span><input autocomplete="email" id="email" required type="email" value="admin@aerocargo.local" /></label>
+            <label><span>Пароль</span><input autocomplete="current-password" id="password" required type="password" value="ChangeMe123!" /></label>
+            <p class="form-error" id="login-error" role="alert" hidden></p>
+            <button class="button button-primary button-wide" id="login-button" type="submit">Войти в командный центр</button>
+          </form>
+          <div class="security-note"><span>✓</span> Локально · Python · данные сохраняются</div>
+        </div>
+      </section>
+    </main>
+
+    <div class="app-shell" id="app-view" hidden>
+      <aside class="sidebar">
+        <div class="brand"><span class="brand-mark">A</span><span><strong>AERO CARGO</strong><small>AI COMMAND CENTER</small></span></div>
+        <nav aria-label="Основная навигация">
+          <p class="nav-label">Управление</p>
+          <button class="nav-link active" data-view="dashboard" type="button"><span>⌘</span>Обзор</button>
+          <button class="nav-link" data-view="shipments" type="button"><span>◇</span>Грузы</button>
+          <button class="nav-link" data-view="operations" type="button"><span>✈</span>Операторская</button>
+          <button class="nav-link" data-future="Экономика рейса" type="button"><span>↗</span>Экономика<em>P2</em></button>
+          <button class="nav-link" data-future="Справочники" type="button"><span>⌖</span>Справочники<em>P1.3</em></button>
+        </nav>
+        <div class="sidebar-guardrail"><span>HUMAN CONTROL</span><strong>Pre-check ≠ допуск</strong><p>Финальную приёмку подтверждают оператор, терминал и перевозчик.</p></div>
+      </aside>
+
+      <main class="dashboard">
+        <header class="topbar">
+          <div><span class="eyebrow" id="page-eyebrow">Операционный командный центр</span><h1 id="page-title">Обзор компании</h1></div>
+          <div class="topbar-actions"><span class="data-badge demo_data"><i></i>Локальные данные</span><div class="user-block"><span class="avatar" id="avatar">ММ</span><span><strong id="user-name">Манучер Маник</strong><small id="user-details">AERO CARGO Demo · Owner / CEO</small></span></div><button aria-label="Выйти" class="icon-button" id="logout-button" type="button">↪</button></div>
+        </header>
+
+        <section class="app-section" id="section-dashboard">
+          <section class="phase-banner"><div><span id="phase">P1.2</span><strong id="phase-label">Cargo Passport + Operator Queue</strong></div><p>Автономный рабочий контур на Python: заявка → проверка → решение → запрос ёмкости.</p><div class="phase-progress"><i></i><i></i><i></i><i></i><i></i><i></i></div></section>
+          <section class="metric-grid" id="metric-grid" aria-label="Ключевые показатели"></section>
+          <div class="content-grid">
+            <section class="panel span-two"><div class="panel-heading"><div><span class="eyebrow">Готовность продукта</span><h2>Модули</h2></div><span class="panel-badge">P1.2 READY</span></div><div class="module-list" id="module-list"></div></section>
+            <section class="panel"><div class="panel-heading"><div><span class="eyebrow">Проверка сценария</span><h2>Что сделать</h2></div></div><ol class="action-list" id="action-list"></ol></section>
+            <section class="panel span-two"><div class="panel-heading"><div><span class="eyebrow">Контроль решений</span><h2>Без ложной автоматизации</h2></div></div><div class="truth-grid"><article><span>01</span><strong>Файлы</strong><p>Фото и PDF сохраняются локально.</p></article><article><span>02</span><strong>Правила</strong><p>Стоп-категории блокируются до оператора.</p></article><article><span>03</span><strong>Перевозчик</strong><p>CONFIRMED требует реальный номер брони.</p></article></div></section>
+            <section class="panel"><div class="panel-heading"><div><span class="eyebrow">Последние события</span><h2>Audit log</h2></div></div><div class="event-list" id="event-list"></div></section>
+          </div>
+        </section>
+
+        <section class="app-section" id="section-shipments" hidden>
+          <div class="workspace-grid">
+            <form class="panel intake-panel" id="shipment-form">
+              <div class="panel-heading"><div><span class="eyebrow">Новая заявка</span><h2>Паспорт груза</h2></div><span class="panel-badge">P1.1</span></div>
+              <div class="route-grid">
+                <label><span>Откуда</span><input name="origin" required value="Челябинск" /></label>
+                <span class="route-arrow">→</span>
+                <label><span>Куда</span><input name="destination" required value="Москва" /></label>
+              </div>
+              <fieldset><legend>Сервис</legend><div class="tier-grid">
+                <label class="tier-card"><input name="service_tier" type="radio" value="ECONOMY" /><strong>Economy</strong><small>3–5 дней</small></label>
+                <label class="tier-card active"><input checked name="service_tier" type="radio" value="STANDARD" /><strong>Standard</strong><small>48–72 часа</small></label>
+                <label class="tier-card"><input name="service_tier" type="radio" value="EXPRESS" /><strong>Express</strong><small>по запросу</small></label>
+              </div></fieldset>
+              <div class="field-grid two"><label><span>Что перевозим</span><textarea name="content_description" required placeholder="Например: металлические крепления, без батарей"></textarea></label><label><span>Упаковка</span><input name="package_type" required value="Картонная коробка" /></label></div>
+              <div class="field-grid five"><label><span>Мест</span><input min="1" name="pieces" required type="number" value="1" /></label><label><span>Вес, кг</span><input min=".1" name="actual_weight_kg" required step=".1" type="number" value="50" /></label><label><span>Длина, см</span><input min="1" name="length_cm" required type="number" value="60" /></label><label><span>Ширина, см</span><input min="1" name="width_cm" required type="number" value="40" /></label><label><span>Высота, см</span><input min="1" name="height_cm" required type="number" value="40" /></label></div>
+              <div class="weight-strip"><span>Фактический <b id="actual-preview">50 кг</b></span><span>Объёмный <b id="volume-preview">16 кг</b></span><span>Платный <b id="chargeable-preview">50 кг</b></span></div>
+              <fieldset><legend>Контрольные признаки</legend><div class="check-grid"><label><input name="has_batteries" type="checkbox" /> Батареи</label><label><input name="has_chemicals" type="checkbox" /> Химические вещества</label><label><input name="has_medicines" type="checkbox" /> Лекарства</label><label><input name="is_perishable" type="checkbox" /> Скоропортящийся груз</label></div></fieldset>
+              <fieldset><legend>Подтверждающие материалы</legend><div class="upload-grid">
+                <label class="upload-card"><span>01</span><strong>Фото содержимого</strong><small id="contents-file-name">JPG, PNG или WEBP · до 10 МБ</small><input accept="image/jpeg,image/png,image/webp" id="contents-file" type="file" /></label>
+                <label class="upload-card"><span>02</span><strong>Фото упаковки</strong><small id="package-file-name">JPG, PNG или WEBP · до 10 МБ</small><input accept="image/jpeg,image/png,image/webp" id="package-file" type="file" /></label>
+                <label class="upload-card"><span>03</span><strong>Упаковочный лист</strong><small id="packing-file-name">PDF · до 10 МБ</small><input accept="application/pdf" id="packing-file" type="file" /></label>
+              </div></fieldset>
+              <label class="declaration"><input name="declaration_accepted" required type="checkbox" /> Подтверждаю, что описание и признаки груза указаны достоверно. Понимаю, что pre-check не заменяет решение перевозчика.</label>
+              <p class="form-error" id="shipment-error" role="alert" hidden></p>
+              <button class="button button-primary button-wide" id="shipment-submit" type="submit">Создать паспорт и выполнить pre-check</button>
+            </form>
+            <aside class="panel side-panel"><div class="panel-heading"><div><span class="eyebrow">Реестр</span><h2>Созданные грузы</h2></div><span class="count-badge" id="shipment-count">0</span></div><div class="shipment-list" id="shipment-list"></div></aside>
+          </div>
+        </section>
+
+        <section class="app-section" id="section-operations" hidden>
+          <div class="operations-layout">
+            <section class="panel queue-panel"><div class="panel-heading"><div><span class="eyebrow">Human approval</span><h2>Очередь оператора</h2></div><span class="count-badge" id="queue-count">0</span></div><div class="queue-list" id="queue-list"></div></section>
+            <section class="panel decision-panel" id="decision-panel"><div class="empty-state"><span>✈</span><h2>Выберите заявку</h2><p>Справа появится паспорт, решение оператора и ручной запрос перевозчику.</p></div></section>
+          </div>
+        </section>
+      </main>
+    </div>
+    <div class="demo-toast" id="demo-toast" hidden></div>
+    <script src="assets/browser-backend.js"></script>
+    <script src="assets/demo.js"></script>
+  </body>
+</html>

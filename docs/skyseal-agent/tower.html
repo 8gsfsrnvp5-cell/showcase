@@ -1,0 +1,32 @@
+<!doctype html>
+<html lang="ru">
+<head>
+  <meta charset="utf-8">
+  <meta name="robots" content="noindex" /><meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="theme-color" content="#07111f"><title>SkySeal Control Tower</title>
+  <script src="demo/page.js"></script>
+  <link rel="stylesheet" href="assets/styles.css">
+</head>
+<body class="tower-body">
+  <div class="toast-stack"></div>
+  <section id="loginScreen" class="login-screen">
+    <form id="loginForm" class="login-card"><div class="brand large"><span class="brand-mark">S</span><span>SkySeal</span></div><p>CONTROL TOWER</p><h1>Вход диспетчера</h1><label>Email оператора<input name="email" type="email" autocomplete="username" placeholder="operator@company.com"></label><label>Пароль<input name="password" type="password" autocomplete="current-password" required autofocus></label><button class="primary big">Войти в диспетчерскую</button><small>В локальном режиме достаточно пароля. В облачном режиме роль проверяет Supabase Auth.</small></form>
+  </section>
+  <div id="towerApp" class="tower-layout hidden">
+    <aside class="tower-sidebar">
+      <div class="brand"><span class="brand-mark">S</span><span>SkySeal</span></div><p class="side-caption">CONTROL TOWER</p>
+      <nav><button class="active" data-view="dashboard">Обзор <b id="attentionBadge">0</b></button><button data-view="orders">Заявки</button><button data-view="capacity">Ёмкость</button></nav>
+      <div class="connection"><i id="connectionDot"></i><span id="connectionText">подключение…</span></div>
+      <button id="logout" class="ghost">Выйти</button>
+    </aside>
+    <main class="tower-main">
+      <header class="tower-top"><div><p class="eyebrow">SKYSEAL OPERATIONS</p><h1 id="viewTitle">Обзор операций</h1></div><div class="clock" id="clock"></div></header>
+      <section id="dashboardView" class="view"></section>
+      <section id="ordersView" class="view hidden"><div id="ordersTable"></div></section>
+      <section id="capacityView" class="view hidden"></section>
+      <section id="detailView" class="view hidden"></section>
+    </main>
+  </div>
+  <script type="module" src="assets/tower.js"></script>
+</body>
+</html>

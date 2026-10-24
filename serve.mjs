@@ -16,6 +16,8 @@ createServer(async (req, res) => {
   let file = normalize(join(root, path.slice(prefix.length)));
   if (!file.startsWith(root)) { res.writeHead(403); return res.end(); }
   try {
+    // Like GitHub Pages: /tower is served from tower.html when there is no such folder.
+    if (!extname(file)) await stat(file).catch(async () => { await stat(file + '.html'); file += '.html'; });
     let s = await stat(file);
     if (s.isDirectory()) {
       if (!path.endsWith('/')) { res.writeHead(301, { location: path + '/' + url.search }); return res.end(); }
