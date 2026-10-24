@@ -80,10 +80,12 @@ async function boot() {
   await pyodide.loadPackage(['fastapi', 'pydantic', 'httpx'], { messageCallback: () => {}, errorCallback: () => {} });
 
   progress('Разворачиваем SkySeal OS…');
-  const sources = await (await fetch(new URL('demo/skyseal-src.json', BASE))).json();
-  for (const [file, text] of Object.entries(sources)) {
+  // Modules arrive as bytecode (.pyc) or, from a non-3.14 build, as source.
+  const modules = await (await fetch(new URL('demo/skyseal-src.json', BASE))).json();
+  for (const [file, content] of Object.entries(modules)) {
     pyodide.FS.mkdirTree(file.slice(0, file.lastIndexOf('/')));
-    pyodide.FS.writeFile(file, text);
+    const data = content.base64 ? Uint8Array.from(atob(content.base64), (c) => c.charCodeAt(0)) : content.text;
+    pyodide.FS.writeFile(file, data);
   }
   pyodide.FS.mkdirTree('/app/public');
   for (const dir of DATA_DIRS) {
