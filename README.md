@@ -14,6 +14,8 @@
 | `/skyseal-agent/` | skyseal-agent (SkySeal OS, Python на Pyodide) | `python build_static_demo.py` (ветка `demo/pages`) |
 | `/aero-cargo/` | aero-cargo-ai (ветка `feat/cargo-passport` + демо) | `python build_static_demo.py` (ветка `demo/pages`) |
 | `/buildmind-platform/` | buildmind-platform | `npm run build:demo` (ветка `demo/pages`) |
+| `/yoftam/` | YOFTAM (ветка `block2/client-avatar-wardrobe-pack` + демо) | `DEMO_BASE_PATH=/showcase/yoftam node scripts/build-static-demo.mjs` (ветка `demo/pages`) |
+| `/buildmind-cursor/` | buildmind-cursor-mvp (ветка `feat/api-rbac-skeleton` + демо) | `BASE_PATH=/showcase/buildmind-cursor/ npm run build` (ветка `demo/pages`) |
 | `/kopilka-lite/` | kopilka-gruppy + демо-бэкенд из kopilka-gruppy-1 | собирает `assemble.mjs` |
 | `/buildmind/` | buildmind-core (ветка `agent/core-truth-contract-v1`) | статические файлы как есть |
 | `/procurement/`, `/procurement-v1/` | buildmind-procurement-mvp2, архив из BuildMind-procurement-mvp | статические файлы как есть |

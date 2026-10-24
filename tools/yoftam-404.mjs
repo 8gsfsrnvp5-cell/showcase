@@ -1,0 +1,11 @@
+import { chromium } from 'playwright-core';
+const browser = await chromium.launch({ executablePath: 'C:/Program Files/Google/Chrome/Application/chrome.exe', headless: true });
+const page = await (await browser.newContext()).newPage();
+const bad = new Set();
+page.on('response', r => { if (r.status() >= 400) bad.add(r.status() + ' ' + r.url()); });
+await page.goto('http://localhost:4600/showcase/yoftam/ru/');
+await page.waitForTimeout(3000);
+await page.click('header nav a:text-is("Аватар")');
+await page.waitForTimeout(2000);
+console.log([...bad].join('\n'));
+await browser.close();

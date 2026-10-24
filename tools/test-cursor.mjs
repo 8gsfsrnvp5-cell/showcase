@@ -1,0 +1,17 @@
+import { chromium } from 'playwright-core';
+const BASE = process.argv[2] || 'http://localhost:4600/showcase/buildmind-cursor/';
+const browser = await chromium.launch({ executablePath: 'C:/Program Files/Google/Chrome/Application/chrome.exe', headless: true });
+const page = await (await browser.newContext({ viewport: { width: 1280, height: 860 } })).newPage();
+const errors = [];
+page.on('pageerror', e => errors.push(e.message));
+page.on('console', m => { if (m.type() === 'error') errors.push(m.text()); });
+await page.goto(BASE);
+await page.waitForTimeout(1500);
+const out = { home: (await page.locator('body').innerText()).slice(0, 400), buttons: await page.locator('button').allInnerTexts() };
+await page.screenshot({ path: 'cursor-home.png' });
+await page.goto(BASE + 'works');
+await page.waitForTimeout(1500);
+out.deepLink = { url: page.url(), text: (await page.locator('body').innerText()).slice(0, 200) };
+out.errors = errors;
+console.log(JSON.stringify(out, null, 2));
+await browser.close();

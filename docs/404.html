@@ -9,7 +9,7 @@
     // GitHub Pages serves this page for every missing path. Single-page apps
     // with client-side routes get the path back through ?__path=…
     (function () {
-      var SPA = ['skyseal-cargo', 'aero-cargo'];
+      var SPA = ['skyseal-cargo', 'aero-cargo', 'buildmind-cursor'];
       var m = location.pathname.match(/^(\/showcase\/)([^/]+)(\/.*)?$/);
       if (m && SPA.indexOf(m[2]) >= 0 && m[3] && m[3] !== '/') {
         var search = location.search ? '&' + location.search.slice(1) : '';

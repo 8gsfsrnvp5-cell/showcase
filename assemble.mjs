@@ -47,6 +47,8 @@ const APPS = [
   { slug: 'buildmind-platform', from: 'buildmind-platform/dist/pages' },
   { slug: 'aero-cargo', from: 'aero-cargo-ai/dist/static-demo', spa: true },
   { slug: 'skyseal-agent', from: 'skyseal-agent/dist/static-demo' },
+  { slug: 'yoftam', from: 'YOFTAM/dist/static-demo' },
+  { slug: 'buildmind-cursor', from: 'buildmind-cursor-mvp/dist', spa: true },
   { slug: 'procurement', from: 'buildmind-procurement-mvp2', exclude: ['.git', 'README.md'] },
   { slug: 'procurement-v1', from: '_unzipped/buildmind_mvp_github_starter', exclude: ['README.md'] },
 ];

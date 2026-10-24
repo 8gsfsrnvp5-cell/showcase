@@ -1,0 +1,18 @@
+import { chromium } from 'playwright-core';
+const BASE = 'http://localhost:4600/showcase/buildmind-cursor/';
+const browser = await chromium.launch({ executablePath: 'C:/Program Files/Google/Chrome/Application/chrome.exe', headless: true });
+const page = await (await browser.newContext({ viewport: { width: 1280, height: 860 } })).newPage();
+const errors = [];
+page.on('pageerror', e => errors.push(e.message));
+await page.goto(BASE);
+await page.waitForTimeout(1000);
+await page.getByText('Запустить анализ').first().click();
+await page.waitForTimeout(1000);
+await page.getByText('Demo docs').first().click();
+await page.waitForTimeout(1000);
+await page.getByText('Запустить анализ').first().click();
+await page.waitForTimeout(12000);
+const text = (await page.locator('main, body').first().innerText()).slice(0, 900);
+await page.screenshot({ path: 'cursor-after.png' });
+console.log(text, '\nERR', errors);
+await browser.close();
