@@ -1,279 +1,141 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="ru">
 <head>
-  <meta charset="UTF-8" />
+  <meta charset="utf-8" />
   <meta name="robots" content="noindex" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>BuildMind — MVP кросс-проверки ГПР/ВОР</title>
-  <link rel="stylesheet" href="style.css" />
-  <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='7' fill='%232563eb'/%3E%3Cpath d='M8 23V9h7.5c3 0 4.8 1.4 4.8 3.7 0 1.5-.8 2.6-2.1 3.1 1.7.4 2.8 1.7 2.8 3.4 0 2.5-2 3.8-5.1 3.8zm4-8.4h3c1.2 0 1.9-.6 1.9-1.6s-.7-1.5-1.9-1.5h-3zm0 5.9h3.3c1.3 0 2.1-.6 2.1-1.7s-.8-1.7-2.1-1.7H12z' fill='%23fff'/%3E%3C/svg%3E" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>BuildMind — инженерный контроль строительного проекта</title>
+  <meta name="description" content="BuildMind находит расхождения в ГПР и ВОР, пропущенные работы, дефицит материалов и сроки заказа по документам проекта. Решение всегда за инженером." />
+  <link rel="icon" href="favicon.svg" type="image/svg+xml" />
+  <link rel="stylesheet" href="site.css" />
 </head>
 <body>
-  <div id="authOverlay">
-    <div class="auth-box">
-      <h1>BuildMind — MVP</h1>
-
-      <div id="bootstrapForm" hidden>
-        <h2>Первый запуск: создайте учётную запись администратора</h2>
-        <p class="hint">
-          Пользователей в системе ещё нет. Придумайте логин и пароль для первого
-          администратора — никаких заранее заданных или демонстрационных учётных
-          данных здесь нет намеренно.
-        </p>
-        <div class="supplier-field">
-          <label>Логин</label>
-          <input type="text" id="bootstrapUsername" autocomplete="username" />
-        </div>
-        <div class="supplier-field">
-          <label>Имя (как показывать)</label>
-          <input type="text" id="bootstrapName" placeholder="например, Иванов И.И." />
-        </div>
-        <div class="supplier-field">
-          <label>Пароль (не короче 8 символов)</label>
-          <input type="password" id="bootstrapPassword" autocomplete="new-password" />
-        </div>
-        <button type="button" id="bootstrapSubmitBtn">Создать администратора и войти</button>
-        <p id="bootstrapError" class="auth-error"></p>
-      </div>
-
-      <div id="loginForm" hidden>
-        <h2>Вход</h2>
-        <div class="supplier-field">
-          <label>Логин</label>
-          <input type="text" id="loginUsername" autocomplete="username" />
-        </div>
-        <div class="supplier-field">
-          <label>Пароль</label>
-          <input type="password" id="loginPassword" autocomplete="current-password" />
-        </div>
-        <button type="button" id="loginSubmitBtn">Войти</button>
-        <p id="loginError" class="auth-error"></p>
-      </div>
-
-      <p id="authLoadingHint" class="hint">Проверка входа...</p>
+  <header class="site-header">
+    <div class="wrap nav">
+      <a class="logo" href="./"><img src="favicon.svg" alt="" width="28" height="28" />BuildMind</a>
+      <nav>
+        <a href="#features">Возможности</a>
+        <a href="#disciplines">Виды работ</a>
+        <a href="#pricing">Тарифы</a>
+        <a href="#pilot">Пилот</a>
+        <a class="nav-login" href="app/">Войти</a>
+      </nav>
     </div>
-  </div>
-
-  <div id="appRoot" hidden>
-  <header>
-    <div class="user-bar">
-      <span id="currentUserInfo"></span>
-      <button type="button" id="manageUsersBtn" class="secondary" hidden>Пользователи</button>
-      <button type="button" id="logoutBtn" class="secondary">Выйти</button>
-    </div>
-    <h1>BuildMind — MVP</h1>
-    <p class="subtitle">
-      Кросс-проверка графика производства работ (ГПР) и ведомости объёмов работ (ВОР).
-      Демонстрационная база знаний: дорожные работы, АСУДД, светофоры, знаки.
-    </p>
-    <p class="disclaimer">
-      ⚠️ Это ранний технический прототип нового этапа BuildMind. Результаты — подсказка,
-      требуют проверки инженером ПТО. Не используйте для реальных решений без проверки.
-    </p>
-    <p class="disclaimer">
-      ⚠️ Разбор .pdf — экспериментальный и лучше всего работает для аккуратных табличных
-      PDF (например, экспорт из Excel/Word). Сканы без текстового слоя (просто фотографии
-      страниц) не читаются — для них нужен OCR, которого здесь пока нет. Если результат
-      по .pdf выглядит странно — попробуйте .xlsx или CSV того же документа.
-    </p>
   </header>
 
   <main>
-    <section class="project-bar">
-      <label for="projectSelect">Проект:</label>
-      <select id="projectSelect">
-        <option value="">— без сохранения (разовая проверка) —</option>
-      </select>
-      <button id="newProjectBtn" class="secondary">+ Новый проект</button>
-      <span id="projectHint" class="hint"></span>
-    </section>
-
-    <section class="uploads">
-      <div class="upload-box">
-        <h2>ГПР (график производства работ)</h2>
-        <p class="hint">.xlsx, .pdf или CSV с колонками: наименование работы, объём, ед. измерения</p>
-        <input type="file" id="gprFile" accept=".csv,.xlsx,.pdf,text/csv,application/pdf" />
-        <textarea id="gprText" placeholder="...или вставьте CSV прямо сюда" rows="6"></textarea>
-      </div>
-
-      <div class="upload-box">
-        <h2>ВОР (ведомость объёмов работ)</h2>
-        <p class="hint">.xlsx, .pdf или CSV с колонками: наименование работы, объём, ед. измерения</p>
-        <input type="file" id="vorFile" accept=".csv,.xlsx,.pdf,text/csv,application/pdf" />
-        <textarea id="vorText" placeholder="...или вставьте CSV прямо сюда" rows="6"></textarea>
-      </div>
-    </section>
-
-    <div class="actions">
-      <button id="runBtn">Сравнить</button>
-      <button id="demoBtn" class="secondary">Загрузить демо-пример</button>
-      <span id="status"></span>
-    </div>
-
-    <section id="summary" class="summary" hidden></section>
-
-    <section id="resultsWrap" hidden>
-      <table id="resultsTable">
-        <thead>
-          <tr>
-            <th>Работа (по базе знаний)</th>
-            <th>Статус</th>
-            <th>Объём ГПР</th>
-            <th>Объём ВОР</th>
-            <th>Уверенность</th>
-            <th>Материалы (по базе знаний)</th>
-            <th>Комментарий</th>
-          </tr>
-        </thead>
-        <tbody id="resultsBody"></tbody>
-      </table>
-    </section>
-
-    <section id="sequencingWrap" hidden>
-      <h2>Проверка последовательности работ (по ГПР)</h2>
-      <p class="disclaimer" id="sequencingDisclaimer"></p>
-      <div id="sequencingList"></div>
-    </section>
-
-    <section id="resourcesWrap" hidden>
-      <h2>Примерная потребность в людях, технике и материалах</h2>
-      <p class="disclaimer" id="resourcesDisclaimer"></p>
-      <table id="resourcesTable">
-        <thead>
-          <tr>
-            <th>Тип</th>
-            <th>Ресурс</th>
-            <th>Кол-во</th>
-            <th>Ед.</th>
-            <th>Уверенность</th>
-            <th>По каким работам посчитано</th>
-            <th>Поставщики (по названию)</th>
-          </tr>
-        </thead>
-        <tbody id="resourcesBody"></tbody>
-      </table>
-      <div id="resourcesUncovered"></div>
-    </section>
-
-    <section id="suppliersWrap">
-      <h2>Поставщики материалов</h2>
-      <p class="hint">
-        Справочник поставщиков, известных именно вам — специально начинается пустым:
-        никаких выдуманных компаний, контактов или цен здесь нет и не будет. Добавляйте
-        сюда реальных поставщиков и материалы, которые они поставляют — тогда в оценке
-        потребности в материалах (после кросс-проверки) BuildMind будет подсказывать,
-        у кого из уже известных поставщиков есть похожий по названию материал.
-      </p>
-      <p class="disclaimer">
-        ⚠️ Совпадение — только по похожести названия материала (склонения, порядок слов),
-        а не по характеристикам (марка, сечение, ГОСТ и т.п.). Прежде чем заказывать —
-        обязательно проверьте, что это действительно тот материал, который нужен.
-      </p>
-
-      <div class="upload-box" id="supplierFormBox">
-        <h2 id="supplierFormTitle">Добавить поставщика</h2>
-        <input type="hidden" id="supplierEditId" value="" />
-        <div class="supplier-field">
-          <label>Название компании / ИП *</label>
-          <input type="text" id="supplierName" placeholder="ООО «Дорснаб»" />
-        </div>
-        <div class="supplier-field-row">
-          <div class="supplier-field">
-            <label>Контактное лицо</label>
-            <input type="text" id="supplierContact" placeholder="Иванов И.И." />
+    <section class="hero">
+      <div class="wrap hero-grid">
+        <div>
+          <p class="kicker">Для ПТО, снабжения и руководителей проектов — от земляных работ до слаботочки</p>
+          <h1>Видеть риски проекта до того, как они стали деньгами и сорванными сроками</h1>
+          <p class="lead">BuildMind разбирает документы проекта — ГПР, ВОР, спецификации, сметы, сканы — и показывает
+            расхождения объёмов, пропущенные работы, дефицит материалов и крайние даты заказа. У каждого вывода — источник:
+            документ и страница. Решение принимает инженер.</p>
+          <div class="cta">
+            <a class="btn primary" href="app/#signup">Попробовать бесплатно</a>
+            <a class="btn" href="#pilot">Обсудить пилот</a>
           </div>
-          <div class="supplier-field">
-            <label>Телефон</label>
-            <input type="text" id="supplierPhone" placeholder="+7 900 000-00-00" />
-          </div>
+          <p class="note" id="trialNote">Пробный период — без оплаты и без привязки карты.</p>
         </div>
-        <div class="supplier-field-row">
-          <div class="supplier-field">
-            <label>Email</label>
-            <input type="text" id="supplierEmail" placeholder="info@example.com" />
-          </div>
-          <div class="supplier-field">
-            <label>Регион</label>
-            <input type="text" id="supplierRegion" placeholder="Московская область" />
-          </div>
-        </div>
-        <div class="supplier-field">
-          <label>Примечание</label>
-          <input type="text" id="supplierNotes" placeholder="например: работаем с 2023 года, отсрочка платежа 14 дней" />
-        </div>
-
-        <h3>Материалы этого поставщика</h3>
-        <div id="supplierMaterialsRows"></div>
-        <button type="button" id="addSupplierMaterialBtn" class="secondary">+ Материал</button>
-
-        <div class="actions">
-          <button type="button" id="saveSupplierBtn">Сохранить поставщика</button>
-          <button type="button" id="cancelSupplierEditBtn" class="secondary" hidden>Отменить редактирование</button>
-          <span id="supplierFormStatus" class="hint"></span>
+        <div class="hero-card" aria-hidden="true">
+          <div class="hc-row"><span class="dot bad"></span><b>Кабельная канализация</b><span>ГПР 300 м · ВОР 260 м</span></div>
+          <div class="hc-row"><span class="dot warn"></span><b>Знаки 5.19.1</b><span>нет в ВОР</span></div>
+          <div class="hc-row"><span class="dot warn"></span><b>Труба ПНД 110</b><span>заказать до 14.11</span></div>
+          <div class="hc-row"><span class="dot ok"></span><b>Разработка траншеи</b><span>совпадает</span></div>
+          <p class="hc-foot">Пример разбора: расхождения и сроки — с указанием документа-источника</p>
         </div>
       </div>
+    </section>
 
-      <div id="suppliersListWrap">
-        <h3>Список поставщиков</h3>
-        <div id="suppliersList" class="hint">Загрузка...</div>
+    <section class="pains">
+      <div class="wrap">
+        <h2>Где проект теряет деньги</h2>
+        <div class="grid3">
+          <div class="pain"><h3>Объёмы не сходятся</h3><p>ГПР, ВОР и смета живут отдельно. Расхождения замечают на приёмке или в претензии заказчика.</p></div>
+          <div class="pain"><h3>Материал заказан поздно</h3><p>Дефицит видно, когда бригада уже стоит. Срок поставки и страховой запас никто не сверял с графиком.</p></div>
+          <div class="pain"><h3>Документы — это сканы</h3><p>Сотни страниц PDF и фотографий таблиц перепечатывают руками — долго и с ошибками.</p></div>
+        </div>
       </div>
     </section>
 
-    <section id="historyWrap" hidden>
-      <h2>История версий проекта</h2>
-      <p class="hint">
-        Каждая новая загрузка документов добавляет версию, а не стирает предыдущую —
-        старые данные всегда остаются в архиве.
-      </p>
-      <div id="historyList"></div>
-    </section>
-
-    <section id="usersWrap" hidden>
-      <h2>Пользователи и роли</h2>
-      <p class="hint">
-        Доступно только администратору. Роль определяет, что пользователь может делать
-        (см. README — раздел «Роли и доступ»): например, «Снабжение» не может создавать
-        проекты, а «Финансы» может только просматривать.
-      </p>
-
-      <div class="upload-box" id="userFormBox">
-        <h2 id="userFormTitle">Добавить пользователя</h2>
-        <input type="hidden" id="userEditId" value="" />
-        <div class="supplier-field-row">
-          <div class="supplier-field">
-            <label>Логин</label>
-            <input type="text" id="userUsername" autocomplete="off" />
-          </div>
-          <div class="supplier-field">
-            <label>Имя</label>
-            <input type="text" id="userName" />
-          </div>
-        </div>
-        <div class="supplier-field-row">
-          <div class="supplier-field">
-            <label>Роль</label>
-            <select id="userRole"></select>
-          </div>
-          <div class="supplier-field">
-            <label>Пароль (при создании — обязателен, при редактировании — оставьте пустым, чтобы не менять)</label>
-            <input type="password" id="userPassword" autocomplete="new-password" />
-          </div>
-        </div>
-        <div class="actions">
-          <button type="button" id="saveUserBtn">Сохранить пользователя</button>
-          <button type="button" id="cancelUserEditBtn" class="secondary" hidden>Отменить редактирование</button>
-          <span id="userFormStatus" class="hint"></span>
+    <section id="features" class="features">
+      <div class="wrap">
+        <h2>Что делает BuildMind</h2>
+        <div class="grid3">
+          <div class="feature"><h3>Рабочее место проекта</h3><p>Загрузка PDF, Excel и сканов. Распознавание текста (OCR) прямо в браузере, разбор составных PDF по страницам, реестр документов и редакций.</p></div>
+          <div class="feature"><h3>Сверка ГПР и ВОР</h3><p>Сопоставление работ с базой знаний, расхождения объёмов, пропуски, проверка последовательности работ, черновик исполнительной документации.</p></div>
+          <div class="feature"><h3>Контроль снабжения</h3><p>Потребность, склад, резерв и поставки в одном расчёте: дефицит, дата потребности и крайняя дата заказа с учётом страхового запаса.</p></div>
+          <div class="feature"><h3>Проверка инженером</h3><p>Каждый вывод привязан к документу и странице. Спорное уходит на проверку — без подтверждения специалиста ничего не считается фактом.</p></div>
+          <div class="feature"><h3>Команда и роли</h3><p>Директор, РП, ПТО, снабжение, финансы — у каждой роли свои права, они проверяются и на сервере. История изменений и откат.</p></div>
+          <div class="feature"><h3>Поставщики</h3><p>Свой справочник поставщиков и цен: после разбора BuildMind подскажет, у кого из ваших поставщиков есть нужный материал.</p></div>
         </div>
       </div>
+    </section>
 
-      <div id="usersListWrap">
-        <h3>Список пользователей</h3>
-        <div id="usersList" class="hint">Загрузка...</div>
+    <section id="disciplines" class="disciplines">
+      <div class="wrap">
+        <h2>Под ваш вид работ</h2>
+        <p class="sub">Выберите виды работ проекта — распознавание документов, проверки и расчёты перестроятся под них.
+          По каждому виду работает профильный агент: проверяет комплектность позиций, собирает акты скрытых работ,
+          исполнительную документацию и нормативную базу.</p>
+        <div class="disc-grid" id="disciplineTiles"></div>
+        <p class="note" id="disciplinesNote"></p>
+      </div>
+    </section>
+
+    <section class="steps">
+      <div class="wrap">
+        <h2>Как начать</h2>
+        <ol class="steps-list">
+          <li><b>Зарегистрируйте компанию</b><span>Пробный период без оплаты: пригласите ПТО и снабжение.</span></li>
+          <li><b>Загрузите документы одного объекта</b><span>ГПР, ВОР, спецификации, сметы — PDF, сканы или Excel.</span></li>
+          <li><b>Разберите результат с инженером</b><span>Подтвердите выводы, поставьте задачи снабжению, выгрузите отчёт.</span></li>
+        </ol>
+      </div>
+    </section>
+
+    <section id="pricing" class="pricing">
+      <div class="wrap">
+        <h2>Тарифы</h2>
+        <p class="sub">Оплата по счёту для юрлиц и ИП или картой. Цены без скрытых платежей; при оплате за год — скидка.</p>
+        <div class="grid3" id="plans"></div>
+      </div>
+    </section>
+
+    <section id="pilot" class="pilot">
+      <div class="wrap pilot-grid">
+        <div>
+          <h2>Пилот на вашем объекте</h2>
+          <p>Возьмём документы одного реального объекта, вместе разберём результат и посчитаем, сколько времени и денег это экономит
+            вашей команде. Для пилота настроим нормы и базу работ под ваш вид строительства.</p>
+          <ul class="checks">
+            <li>2–4 недели на одном объекте</li>
+            <li>Работа с вашими документами, без перепечатывания</li>
+            <li>Итог — отчёт по рискам и решение о внедрении</li>
+          </ul>
+        </div>
+        <form id="leadForm" class="lead-form" novalidate>
+          <label>Имя<input name="name" required autocomplete="name" /></label>
+          <label>Компания<input name="company" autocomplete="organization" /></label>
+          <label>Телефон или email<input name="contact" required autocomplete="email" /></label>
+          <label>Что строите и что хотите проверить<textarea name="message" rows="3"></textarea></label>
+          <label class="consent"><input type="checkbox" name="consent" /> <span>Согласен на <a href="legal/consent" target="_blank" rel="noopener">обработку персональных данных</a></span></label>
+          <button type="submit" class="btn primary">Отправить заявку</button>
+          <p class="form-status" id="leadStatus" role="status"></p>
+        </form>
       </div>
     </section>
   </main>
-  </div>
 
-  <script src="runtime.js" data-app="app.js"></script>
+  <footer class="site-footer">
+    <div class="wrap footer-grid">
+      <div>© BuildMind</div>
+      <div><a href="legal/offer">Оферта</a> · <a href="legal/privacy">Политика обработки персональных данных</a></div>
+      <div id="contacts"></div>
+    </div>
+  </footer>
+
+  <script src="runtime.js" data-app="site.js" data-bar="off"></script>
 </body>
 </html>

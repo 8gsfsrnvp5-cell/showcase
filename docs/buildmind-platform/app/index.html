@@ -1,0 +1,372 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="robots" content="noindex" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>BuildMind — кабинет</title>
+  <link rel="stylesheet" href="style.css" />
+  <link rel="icon" href="../favicon.svg" type="image/svg+xml" />
+</head>
+<body>
+  <div id="authOverlay">
+    <div class="auth-box">
+      <a class="auth-brand" href="../">BuildMind</a>
+
+      <div id="loginForm" hidden>
+        <h2>Вход в кабинет</h2>
+        <div class="supplier-field">
+          <label for="loginUsername">Логин</label>
+          <input type="text" id="loginUsername" autocomplete="username" />
+        </div>
+        <div class="supplier-field">
+          <label for="loginPassword">Пароль</label>
+          <input type="password" id="loginPassword" autocomplete="current-password" />
+        </div>
+        <button type="button" id="loginSubmitBtn">Войти</button>
+        <p id="loginError" class="auth-error"></p>
+        <p class="auth-switch" id="toSignupWrap">Компании ещё нет в BuildMind? <a href="#" id="toSignup">Зарегистрировать компанию</a></p>
+      </div>
+
+      <div id="signupForm" hidden>
+        <h2>Регистрация компании</h2>
+        <p class="hint" id="signupTrialHint">Пробный период — без оплаты и без привязки карты.</p>
+        <div class="supplier-field">
+          <label for="signupCompany">Название компании</label>
+          <input type="text" id="signupCompany" placeholder="ООО «Дорстрой»" autocomplete="organization" />
+        </div>
+        <div class="supplier-field-row">
+          <div class="supplier-field">
+            <label for="signupName">Ваше имя</label>
+            <input type="text" id="signupName" placeholder="Иванов Иван" autocomplete="name" />
+          </div>
+          <div class="supplier-field">
+            <label for="signupEmail">Email</label>
+            <input type="email" id="signupEmail" autocomplete="email" />
+          </div>
+        </div>
+        <div class="supplier-field-row">
+          <div class="supplier-field">
+            <label for="signupUsername">Логин для входа</label>
+            <input type="text" id="signupUsername" autocomplete="username" placeholder="ivanov" />
+          </div>
+          <div class="supplier-field">
+            <label for="signupPassword">Пароль (не короче 8 символов)</label>
+            <input type="password" id="signupPassword" autocomplete="new-password" />
+          </div>
+        </div>
+        <label class="consent">
+          <input type="checkbox" id="signupConsent" />
+          <span>Принимаю условия <a href="../legal/offer" target="_blank" rel="noopener">оферты</a> и даю
+            <a href="../legal/consent" target="_blank" rel="noopener">согласие на обработку персональных данных</a>
+            в соответствии с <a href="../legal/privacy" target="_blank" rel="noopener">политикой</a>.</span>
+        </label>
+        <button type="button" id="signupSubmitBtn">Зарегистрировать и войти</button>
+        <p id="signupError" class="auth-error"></p>
+        <p class="auth-switch">Уже есть учётная запись? <a href="#" id="toLogin">Войти</a></p>
+      </div>
+
+      <p id="authLoadingHint" class="hint">Проверка входа…</p>
+    </div>
+  </div>
+
+  <div id="appRoot" hidden>
+    <header class="app-header">
+      <div class="brand-row">
+        <a class="brand" href="../">BuildMind</a>
+        <span id="companyName" class="company-name"></span>
+        <span id="subscriptionChip" class="sub-chip" hidden></span>
+        <div class="user-bar">
+          <span id="currentUserInfo"></span>
+          <button type="button" id="changePasswordBtn" class="secondary small">Сменить пароль</button>
+          <button type="button" id="logoutBtn" class="secondary small">Выйти</button>
+        </div>
+      </div>
+      <nav class="tabs" id="tabs">
+        <a href="#projects" data-tab="projects" data-company>Проекты</a>
+        <a href="#crosscheck" data-tab="crosscheck" data-company>Сверка ГПР/ВОР</a>
+        <a href="#suppliers" data-tab="suppliers" data-company>Поставщики</a>
+        <a href="#team" data-tab="team" data-company data-perm="users.manage">Команда</a>
+        <a href="#billing" data-tab="billing" data-company data-perm="billing.view">Тариф и оплата</a>
+        <a href="#platform" data-tab="platform" data-platform-admin>Администрирование сервиса</a>
+      </nav>
+    </header>
+
+    <div id="subscriptionBanner" class="banner" hidden></div>
+
+    <main>
+      <!-- ============================ Проекты ============================ -->
+      <section id="tab-projects" class="tab-panel" hidden>
+        <div class="panel-head">
+          <div>
+            <h2>Проекты</h2>
+            <p class="hint">Рабочее место проекта — документы (PDF, сканы, Excel), распознавание, работы и материалы,
+              контроль снабжения и проверка инженером. Данные хранятся на сервере компании и доступны команде.</p>
+          </div>
+          <button type="button" id="newProjectBtn">+ Новый проект</button>
+        </div>
+        <div id="projectsList" class="cards"></div>
+      </section>
+
+      <!-- ========================== Сверка ГПР/ВОР ========================== -->
+      <section id="tab-crosscheck" class="tab-panel" hidden>
+        <h2>Быстрая сверка ГПР и ВОР</h2>
+        <p class="hint">Загрузите график производства работ и ведомость объёмов — BuildMind сопоставит работы
+          с базой знаний выбранных видов работ, найдёт расхождения объёмов и пропуски, проверит последовательность,
+          а профильные агенты — комплектность позиций, акты скрытых работ и нормативную базу.</p>
+        <p class="disclaimer">Результат — подсказка: перед решением его проверяет инженер ПТО. Нормы расхода в базе — шаблоны, не сметные нормативы.</p>
+
+        <section class="project-bar">
+          <label for="projectSelect">Сохранять в проект:</label>
+          <select id="projectSelect">
+            <option value="">— не сохранять (разовая проверка) —</option>
+          </select>
+          <span id="projectHint" class="hint"></span>
+        </section>
+
+        <section class="discipline-bar">
+          <div class="hint" id="crosscheckDisciplinesHint">Виды работ для распознавания:</div>
+          <div id="crosscheckDisciplines" class="discipline-chips"></div>
+        </section>
+
+        <section class="uploads">
+          <div class="upload-box">
+            <h3>ГПР (график производства работ)</h3>
+            <p class="hint">.xlsx, .pdf (с текстовым слоем) или CSV: наименование работы, объём, ед. измерения</p>
+            <input type="file" id="gprFile" accept=".csv,.xlsx,.pdf,text/csv,application/pdf" />
+            <textarea id="gprText" placeholder="…или вставьте CSV прямо сюда" rows="6"></textarea>
+          </div>
+          <div class="upload-box">
+            <h3>ВОР (ведомость объёмов работ)</h3>
+            <p class="hint">.xlsx, .pdf (с текстовым слоем) или CSV: наименование работы, объём, ед. измерения</p>
+            <input type="file" id="vorFile" accept=".csv,.xlsx,.pdf,text/csv,application/pdf" />
+            <textarea id="vorText" placeholder="…или вставьте CSV прямо сюда" rows="6"></textarea>
+          </div>
+        </section>
+        <p class="hint">Сканы без текстового слоя распознаёт рабочее место проекта (OCR в браузере).</p>
+
+        <div class="actions">
+          <button id="runBtn">Сравнить</button>
+          <button id="demoBtn" class="secondary">Подставить пример</button>
+          <span id="status"></span>
+        </div>
+
+        <section id="summary" class="summary" hidden></section>
+
+        <section id="resultsWrap" hidden>
+          <table id="resultsTable">
+            <thead>
+              <tr>
+                <th>Работа (по базе знаний)</th>
+                <th>Статус</th>
+                <th>Объём ГПР</th>
+                <th>Объём ВОР</th>
+                <th>Уверенность</th>
+                <th>Материалы (по базе знаний)</th>
+                <th>Комментарий</th>
+              </tr>
+            </thead>
+            <tbody id="resultsBody"></tbody>
+          </table>
+        </section>
+
+        <section id="sequencingWrap" hidden>
+          <h2>Проверка последовательности работ (по ГПР)</h2>
+          <p class="disclaimer" id="sequencingDisclaimer"></p>
+          <div id="sequencingList"></div>
+        </section>
+
+        <section id="agentsWrap" hidden>
+          <h2>Проверка профильных агентов</h2>
+          <p class="disclaimer">Диспетчер отнёс работы к видам работ, профильные агенты проверили комплектность по шаблонам базы
+            знаний и собрали исполнительную документацию. Действующие редакции нормативных документов сверяйте по официальным источникам.</p>
+          <div id="agentsList" class="agents-list"></div>
+        </section>
+
+        <section id="resourcesWrap" hidden>
+          <h2>Примерная потребность в людях, технике и материалах</h2>
+          <p class="disclaimer" id="resourcesDisclaimer"></p>
+          <table id="resourcesTable">
+            <thead>
+              <tr>
+                <th>Тип</th>
+                <th>Ресурс</th>
+                <th>Кол-во</th>
+                <th>Ед.</th>
+                <th>Уверенность</th>
+                <th>По каким работам посчитано</th>
+                <th>Поставщики (по названию)</th>
+              </tr>
+            </thead>
+            <tbody id="resourcesBody"></tbody>
+          </table>
+          <div id="resourcesUncovered"></div>
+        </section>
+
+        <section id="historyWrap" hidden>
+          <h2>История сверок проекта</h2>
+          <p class="hint">Каждая загрузка документов добавляет версию и не стирает предыдущую.</p>
+          <div id="historyList"></div>
+        </section>
+      </section>
+
+      <!-- ============================ Поставщики ============================ -->
+      <section id="tab-suppliers" class="tab-panel" hidden>
+        <h2>Поставщики материалов</h2>
+        <p class="hint">Справочник поставщиков вашей компании — изначально пустой: вымышленных компаний и цен здесь нет.
+          Добавьте реальных поставщиков и их материалы — после сверки ГПР/ВОР BuildMind подскажет,
+          у кого из них есть похожий по названию материал.</p>
+        <p class="disclaimer">Совпадение — по похожести названия (склонения, порядок слов), а не по характеристикам
+          (марка, сечение, ГОСТ). Перед заказом проверьте, что материал тот самый.</p>
+
+        <div class="upload-box" id="supplierFormBox">
+          <h3 id="supplierFormTitle">Добавить поставщика</h3>
+          <input type="hidden" id="supplierEditId" value="" />
+          <div class="supplier-field">
+            <label>Название компании / ИП *</label>
+            <input type="text" id="supplierName" placeholder="ООО «Дорснаб»" />
+          </div>
+          <div class="supplier-field-row">
+            <div class="supplier-field">
+              <label>Контактное лицо</label>
+              <input type="text" id="supplierContact" placeholder="Иванов И.И." />
+            </div>
+            <div class="supplier-field">
+              <label>Телефон</label>
+              <input type="text" id="supplierPhone" placeholder="+7 900 000-00-00" />
+            </div>
+          </div>
+          <div class="supplier-field-row">
+            <div class="supplier-field">
+              <label>Email</label>
+              <input type="text" id="supplierEmail" placeholder="info@example.com" />
+            </div>
+            <div class="supplier-field">
+              <label>Регион</label>
+              <input type="text" id="supplierRegion" placeholder="Московская область" />
+            </div>
+          </div>
+          <div class="supplier-field">
+            <label>Примечание</label>
+            <input type="text" id="supplierNotes" placeholder="например: отсрочка платежа 14 дней" />
+          </div>
+
+          <h3>Материалы этого поставщика</h3>
+          <div id="supplierMaterialsRows"></div>
+          <button type="button" id="addSupplierMaterialBtn" class="secondary">+ Материал</button>
+
+          <div class="actions">
+            <button type="button" id="saveSupplierBtn">Сохранить поставщика</button>
+            <button type="button" id="cancelSupplierEditBtn" class="secondary" hidden>Отменить редактирование</button>
+            <span id="supplierFormStatus" class="hint"></span>
+          </div>
+        </div>
+
+        <div id="suppliersListWrap">
+          <h3>Список поставщиков</h3>
+          <div id="suppliersList" class="hint">Загрузка…</div>
+        </div>
+      </section>
+
+      <!-- ============================== Команда ============================== -->
+      <section id="tab-team" class="tab-panel" hidden>
+        <h2>Команда и роли</h2>
+        <p class="hint">Роль определяет, что сотрудник может делать: например, «Снабжение» ведёт поставщиков
+          и поставки, но не создаёт проекты, а «Финансы» только просматривает. Права проверяются и на сервере.</p>
+        <div id="rolesList" class="roles-list"></div>
+
+        <div class="upload-box" id="userFormBox">
+          <h3 id="userFormTitle">Добавить сотрудника</h3>
+          <input type="hidden" id="userEditId" value="" />
+          <div class="supplier-field-row">
+            <div class="supplier-field">
+              <label>Логин</label>
+              <input type="text" id="userUsername" autocomplete="off" />
+            </div>
+            <div class="supplier-field">
+              <label>Имя</label>
+              <input type="text" id="userName" />
+            </div>
+          </div>
+          <div class="supplier-field-row">
+            <div class="supplier-field">
+              <label>Email</label>
+              <input type="email" id="userEmail" autocomplete="off" />
+            </div>
+            <div class="supplier-field">
+              <label>Роль</label>
+              <select id="userRole"></select>
+            </div>
+          </div>
+          <div class="supplier-field">
+            <label>Пароль (при создании — обязателен, при редактировании — оставьте пустым, чтобы не менять)</label>
+            <input type="password" id="userPassword" autocomplete="new-password" />
+          </div>
+          <div class="actions">
+            <button type="button" id="saveUserBtn">Сохранить</button>
+            <button type="button" id="cancelUserEditBtn" class="secondary" hidden>Отменить редактирование</button>
+            <span id="userFormStatus" class="hint"></span>
+          </div>
+        </div>
+
+        <div id="usersListWrap">
+          <h3>Сотрудники</h3>
+          <div id="usersList" class="hint">Загрузка…</div>
+        </div>
+      </section>
+
+      <!-- =========================== Тариф и оплата =========================== -->
+      <section id="tab-billing" class="tab-panel" hidden>
+        <h2>Тариф и оплата</h2>
+        <div id="billingContent">Загрузка…</div>
+      </section>
+
+      <!-- ==================== Администрирование сервиса ==================== -->
+      <section id="tab-platform" class="tab-panel" hidden>
+        <h2>Администрирование сервиса</h2>
+        <p class="hint">Компании-клиенты, их подписки, счета и заявки с сайта. Данные проектов компаний здесь не показываются.</p>
+        <div id="platformContent">Загрузка…</div>
+      </section>
+    </main>
+  </div>
+
+  <dialog id="passwordDialog">
+    <form method="dialog" class="dialog-form">
+      <h3>Смена пароля</h3>
+      <div class="supplier-field">
+        <label for="currentPassword">Текущий пароль</label>
+        <input type="password" id="currentPassword" autocomplete="current-password" />
+      </div>
+      <div class="supplier-field">
+        <label for="newPassword">Новый пароль (не короче 8 символов)</label>
+        <input type="password" id="newPassword" autocomplete="new-password" />
+      </div>
+      <p id="passwordError" class="auth-error"></p>
+      <div class="actions">
+        <button type="button" id="savePasswordBtn">Сохранить</button>
+        <button type="submit" class="secondary">Отмена</button>
+      </div>
+    </form>
+  </dialog>
+
+  <dialog id="disciplineDialog" class="discipline-dialog">
+    <form method="dialog" class="dialog-form">
+      <h3 id="disciplineDialogTitle">Новый проект</h3>
+      <div class="supplier-field" id="disciplineNameField">
+        <label for="disciplineProjectName">Название проекта</label>
+        <input type="text" id="disciplineProjectName" placeholder="Например, «Жилой дом, корпус 2»" />
+      </div>
+      <p class="hint">Виды работ проекта — можно выбрать несколько. От них зависят распознавание документов,
+        проверки профильных агентов и расчёты.</p>
+      <div id="disciplineTiles" class="discipline-tiles"></div>
+      <p id="disciplineError" class="auth-error"></p>
+      <div class="actions">
+        <button type="button" id="disciplineSaveBtn">Создать</button>
+        <button type="submit" class="secondary">Отмена</button>
+      </div>
+    </form>
+  </dialog>
+
+  <script src="../runtime.js" data-app="app/app.js"></script>
+</body>
+</html>
