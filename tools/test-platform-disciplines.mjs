@@ -77,6 +77,28 @@ out.report = {
   hasFinding: /Нет ухода за бетоном|вывоза излишков грунта/.test(reportText),
 };
 
+// Исправления аудита: полная выгрузка проекта и большая ведомость во встроенном сервере.
+out.export = await page.evaluate(async () => {
+  const api = new URL('../api/', location.href);
+  const { projects } = await (await fetch(new URL('projects', api))).json();
+  const house = projects.find((p) => p.name.includes('Жилой дом'));
+  const data = await (await fetch(new URL(`projects/${house.id}/export`, api))).json();
+  return { format: data.format, versions: data.versions.length, hasWorkspace: !!data.workspace };
+});
+out.bigCrosscheck = await page.evaluate(async () => {
+  const names = ['Армирование стен', 'Бетонирование стен', 'Устройство опалубки стен', 'Разработка грунта в котловане'];
+  const lines = ['Наименование работ,Объем,Ед.изм'];
+  for (let i = 0; i < 5000; i++) lines.push(`${names[(i + 1) % names.length]} участок ${Math.floor(i / names.length)},${10 + (i % 50)},м3`);
+  const t0 = performance.now();
+  const r = await fetch(new URL('../api/crosscheck', location.href), {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ gpr: lines.join('\n'), vor: lines.join('\n'), disciplines: ['earthworks', 'monolith'] }),
+  });
+  const data = await r.json();
+  return { status: r.status, ms: Math.round(performance.now() - t0), results: data.results && data.results.length, violations: data.sequencing && data.sequencing.violations.length };
+});
+
 out.errors = errors;
 console.log(JSON.stringify(out, null, 2));
 await browser.close();

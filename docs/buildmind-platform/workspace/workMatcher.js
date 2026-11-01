@@ -165,6 +165,55 @@ function getWorkMatcherRoots(
   (ВРУ, ГКЛ, МАФ) — только целым словом, остальные — с начала слова,
   чтобы «вру» не находилось во «вручную».
 */
+/*
+  Разбор фраз (нормализация и основы слов) запоминается: псевдонимы базы
+  знаний одни и те же для всех строк документа, а без кэша на ведомости
+  в несколько тысяч строк разбор занимал десятки секунд. Размер кэша
+  ограничен, чтобы память не росла от уникальных названий из документов.
+*/
+const WORK_MATCHER_CACHE_LIMIT = 20000;
+const workMatcherNormalizedCache = new Map();
+const workMatcherRootsCache = new Map();
+
+function rememberWorkMatcherValue(
+  cache,
+  key,
+  compute
+) {
+  if (cache.has(key)) {
+    return cache.get(key);
+  }
+
+  if (cache.size >= WORK_MATCHER_CACHE_LIMIT) {
+    cache.clear();
+  }
+
+  const value = compute(key);
+  cache.set(key, value);
+  return value;
+}
+
+function getCachedWorkMatcherNormalized(
+  value
+) {
+  return rememberWorkMatcherValue(
+    workMatcherNormalizedCache,
+    String(value || ''),
+    normalizeWorkMatcherText
+  );
+}
+
+function getCachedWorkMatcherRoots(
+  normalizedValue
+) {
+  return rememberWorkMatcherValue(
+    workMatcherRootsCache,
+    normalizedValue,
+    getWorkMatcherRoots
+  );
+}
+
+
 function findWorkMatcherPhrase(
   text,
   phrase
@@ -286,7 +335,7 @@ function calculateWorkMatcherScore(
   workItem
 ) {
   const normalizedQuery =
-    normalizeWorkMatcherText(
+    getCachedWorkMatcherNormalized(
       query
     );
 
@@ -317,7 +366,7 @@ function calculateWorkMatcherScore(
   searchableValues.forEach(
     function (candidateValue) {
       const normalizedCandidate =
-        normalizeWorkMatcherText(
+        getCachedWorkMatcherNormalized(
           candidateValue
         );
 
@@ -419,12 +468,12 @@ function calculateWorkMatcherScore(
 
            else {
         const queryRoots =
-          getWorkMatcherRoots(
+          getCachedWorkMatcherRoots(
             normalizedQuery
           );
 
         const candidateRoots =
-          getWorkMatcherRoots(
+          getCachedWorkMatcherRoots(
             normalizedCandidate
           );
 

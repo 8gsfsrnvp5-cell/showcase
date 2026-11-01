@@ -509,10 +509,19 @@ function getProjectAnalysisRowsForRole(
   documents,
   role
 ) {
+  // Роль, выбранная пользователем, важнее; при «авто» — вид документа,
+  // который определил анализ (иначе автоопределённые ВОР и ГПР не попадали
+  // в сквозную сверку).
   const roleFiles = new Set(
     documents
       .filter(function (documentItem) {
-        return documentItem.documentRole === role;
+        const chosen =
+          documentItem.documentRole &&
+          documentItem.documentRole !== 'auto'
+            ? documentItem.documentRole
+            : documentItem.kind;
+
+        return chosen === role;
       })
       .map(function (documentItem) {
         return documentItem.fileName;

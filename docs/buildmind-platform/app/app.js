@@ -69,10 +69,16 @@ function arrayBufferToBase64(buffer) {
 // Возвращает либо строку (CSV-текст — для отправки как есть), либо
 // { format: 'xlsx', base64 } — для бинарного файла. Textarea всегда
 // считается CSV-текстом.
+// Файл уходит на сервер в base64 (+33 %); лимит запроса — 60 МБ на оба документа.
+const MAX_CROSSCHECK_FILE_BYTES = 20 * 1024 * 1024;
+
 async function readDocumentInput(inputEl, textareaEl) {
   const file = inputEl.files && inputEl.files[0];
 
   if (file) {
+    if (file.size > MAX_CROSSCHECK_FILE_BYTES) {
+      throw new Error(`файл «${file.name}» больше 20 МБ. Большие документы и сканы загружайте в рабочее место проекта — там они разбираются по страницам.`);
+    }
     const isXlsx = /\.xlsx$/i.test(file.name);
     const isPdf = /\.pdf$/i.test(file.name) || file.type === 'application/pdf';
 
@@ -183,9 +189,9 @@ function renderSequencing(sequencing) {
     .map(
       (v) => `
         <div class="sequencing-item">
-          <div class="title">⚠️ «${v.afterWorkName}» указана раньше, чем «${v.beforeWorkName}»</div>
-          <div class="reason">${v.reason}</div>
-          <div class="basis">${v.basis}</div>
+          <div class="title">⚠️ «${escapeHtml(v.afterWorkName)}» указана раньше, чем «${escapeHtml(v.beforeWorkName)}»${v.occurrences > 1 ? ` <span class="hint">— таких случаев: ${v.occurrences}</span>` : ''}</div>
+          <div class="reason">${escapeHtml(v.reason)}</div>
+          <div class="basis">${escapeHtml(v.basis)}</div>
         </div>
       `
     )
@@ -893,6 +899,7 @@ async function loadProjectCards() {
       <div class="actions">
         <a class="button" href="../workspace/?project=${encodeURIComponent(p.id)}">Открыть рабочее место</a>
         <button type="button" class="secondary small" data-action="history">История изменений</button>
+        <a class="button secondary small" href="${API}projects/${encodeURIComponent(p.id)}/export" download>Выгрузить проект</a>
         ${canManage ? '<button type="button" class="secondary small" data-action="disciplines">Виды работ</button>' : ''}
         ${canManage ? '<button type="button" class="secondary small" data-action="rename">Переименовать</button>' : ''}
         ${canDelete ? '<button type="button" class="danger small" data-action="delete">Удалить</button>' : ''}
