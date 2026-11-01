@@ -40,7 +40,8 @@ for (const [path, text] of CHECKS) {
   const page = await ctx.newPage();
   const errors = [];
   page.on('pageerror', e => errors.push(e.message));
-  page.on('console', m => { if (m.type() === 'error' && !/favicon|404 \(Not Found\)/.test(m.text())) errors.push(m.text()); });
+  // Ответ 404 проверяется по статусу страницы ниже; Pages по HTTP/2 пишет «404 ()» без текста статуса.
+  page.on('console', m => { if (m.type() === 'error' && !/favicon|status of 404/.test(m.text())) errors.push(m.text()); });
   const t0 = Date.now();
   let ok = false, status = 0;
   try {
@@ -50,6 +51,9 @@ for (const [path, text] of CHECKS) {
     ok = true;
   } catch (e) { errors.push('wait: ' + e.message.split('\n')[0]); }
   const overflow = await page.evaluate(() => document.documentElement.scrollWidth > window.innerWidth + 1).catch(() => null);
+  // Несуществующий адрес должен отдавать страницу 404, остальные — 200.
+  const expected = path.startsWith('does-not-exist') ? 404 : 200;
+  if (status !== expected) errors.push(`status ${status}, expected ${expected}`);
   results.push({ path: path || '/', status, ok, ms: Date.now() - t0, hScroll: overflow, errors: errors.slice(0, 3) });
   await page.close();
 }
