@@ -58,7 +58,11 @@
       normativeRefs: ['gost52289', 'pue'],
     },
     'road-sign-installation': { normativeRefs: ['gost52289', 'gost52290'] },
-    'road-road-marking': { normativeRefs: ['gost52289', 'gost51256'] },
+    'road-road-marking': {
+      normativeRefs: ['gost52289', 'gost51256'],
+      // Другие названия материалов в спецификациях — для сводки материалов.
+      materialKeywords: { 'Разметочный материал': ['термопластик', 'холодный пластик', 'краска для разметки', 'эмаль для разметки'] },
+    },
     'road-curb-installation': {
       hiddenWorksActs: ['Акт освидетельствования основания под бортовой камень'],
       normativeRefs: ['sp78', 'sp82'],

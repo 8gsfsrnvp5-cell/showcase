@@ -6,8 +6,26 @@ const STATUS_LABELS = {
   'volume-unknown': { label: 'Объём не распознан', badge: 'warn' },
   'missing-in-gpr': { label: 'Нет в ГПР', badge: 'warn' },
   'missing-in-vor': { label: 'Нет в ВОР', badge: 'warn' },
+  'missing-in-project': { label: 'Нет в проекте', badge: 'warn' },
   unmatched: { label: 'Не сопоставлено', badge: 'bad' },
 };
+
+const MATERIAL_STATUS_LABELS = {
+  used: { label: 'Учтён', badge: 'ok' },
+  'quantity-mismatch': { label: 'Расходится количество', badge: 'warn' },
+  'no-work': { label: 'Нет работы в ВОР/ГПР', badge: 'warn' },
+  unlinked: { label: 'Не связан с работой', badge: 'bad' },
+};
+
+const DEMO_PROJECT = `Наименование,Объем,Ед.изм
+Разработка траншеи под кабель,120,м3
+Прокладка подземной кабельной канализации,300,м
+Устройство дорожного знака 5.19.1,4,шт
+Монтаж дорожной камеры на опоре,2,шт
+Нанесение дорожной разметки термопластиком,150,м2
+Труба гофрированная ПНД 110,310,м
+Знак дорожный 5.19.1 на стойке,4,шт
+Термопластик для разметки,0.9,т`;
 
 const DEMO_GPR = `Наименование работ,Объем,Ед.изм
 Разработка траншеи под кабель,120,м3
@@ -73,6 +91,7 @@ function arrayBufferToBase64(buffer) {
 const MAX_CROSSCHECK_FILE_BYTES = 20 * 1024 * 1024;
 
 async function readDocumentInput(inputEl, textareaEl) {
+  if (!inputEl || !textareaEl) return '';
   const file = inputEl.files && inputEl.files[0];
 
   if (file) {
@@ -98,14 +117,31 @@ async function readDocumentInput(inputEl, textareaEl) {
   return textareaEl.value || '';
 }
 
-function renderSummary(summary) {
+function renderSummary(summary, materials) {
   const wrap = el('summary');
   wrap.hidden = false;
+  const extra = [
+    [summary.missingInProject, 'нет в проекте'],
+    [summary.missingInVor, 'нет в ВОР'],
+    [summary.missingInGpr, 'нет в ГПР'],
+    [summary.volumeMismatch, 'расходятся объёмы'],
+    [materials && materials.summary.missing, 'материалов не учтено'],
+  ].filter(([count]) => count > 0);
   wrap.innerHTML = `
-    <div class="stat"><div class="num">${summary.total}</div><div class="label">строк сопоставлено</div></div>
-    <div class="stat"><div class="num" style="color:var(--ok)">${summary.ok}</div><div class="label">совпадений без замечаний</div></div>
+    <div class="stat"><div class="num">${summary.total}</div><div class="label">работ в сводке</div></div>
+    <div class="stat"><div class="num" style="color:var(--ok)">${summary.ok}</div><div class="label">совпадают во всех документах</div></div>
     <div class="stat"><div class="num" style="color:var(--bad)">${summary.issues}</div><div class="label">требуют внимания</div></div>
+    ${extra.map(([count, label]) => `<div class="stat stat-small"><div class="num" style="color:var(--warn)">${count}</div><div class="label">${label}</div></div>`).join('')}
   `;
+}
+
+// Ячейка объёма: подсвечиваем, если объём расходится с проектом
+// (без проекта — ВОР с ГПР) больше чем на 5 %, как и на сервере.
+function quantityCell(value, base, present) {
+  if (!present) return '<td class="qty qty-missing">нет</td>';
+  if (value === null || value === undefined) return '<td class="qty">—</td>';
+  const differs = base !== null && base !== undefined && base > 0 && Math.abs(value - base) / base > 0.05;
+  return `<td class="qty${differs ? ' qty-diff' : ''}">${escapeHtml(value)}</td>`;
 }
 
 function renderMaterials(materials) {
@@ -119,7 +155,7 @@ function renderMaterials(materials) {
 }
 
 function renderResults(data) {
-  renderSummary(data.summary);
+  renderSummary(data.summary, data.materials);
 
   const tbody = el('resultsBody');
   tbody.innerHTML = '';
@@ -129,6 +165,13 @@ function renderResults(data) {
     const statusInfo = STATUS_LABELS[row.status] || { label: row.status, badge: 'warn' };
     const tr = document.createElement('tr');
     tr.className = 'status-' + row.status;
+    const presence = row.presence || { project: false, vor: row.vorQuantity !== null, gpr: row.gprQuantity !== null };
+    const base = data.withProject && presence.project ? row.projectQuantity : row.gprQuantity;
+    const extraBadges = (row.issues || []).slice(1)
+      .map((issue) => STATUS_LABELS[issue.code])
+      .filter(Boolean)
+      .map((info) => `<span class="badge ${info.badge}">${escapeHtml(info.label)}</span>`)
+      .join(' ');
 
     const confidenceLabel = row.confidence ? row.confidence.label : '—';
 
@@ -137,6 +180,11 @@ function renderResults(data) {
         <strong>${escapeHtml(row.workName)}</strong>
         ${row.disciplineName ? `<div class="discipline-line">${escapeHtml(row.disciplineName)}</div>` : ''}
         ${row.categoryName ? `<div style="color:var(--muted);font-size:11px">${escapeHtml(row.categoryName)}</div>` : ''}
+        ${
+          row.projectSourceNames && row.projectSourceNames.length
+            ? `<div style="color:var(--muted);font-size:11px">Проект: ${escapeHtml(row.projectSourceNames.join('; '))}</div>`
+            : ''
+        }
         ${
           row.gprSourceNames && row.gprSourceNames.length
             ? `<div style="color:var(--muted);font-size:11px">ГПР: ${escapeHtml(row.gprSourceNames.join('; '))}</div>`
@@ -148,15 +196,75 @@ function renderResults(data) {
             : ''
         }
       </td>
-      <td><span class="badge ${statusInfo.badge}">${escapeHtml(statusInfo.label)}</span></td>
-      <td>${escapeHtml(row.gprQuantity ?? '—')}</td>
-      <td>${escapeHtml(row.vorQuantity ?? '—')}</td>
-      <td>${escapeHtml(confidenceLabel)}</td>
+      <td><span class="badge ${statusInfo.badge}">${escapeHtml(statusInfo.label)}</span> ${extraBadges}</td>
+      ${data.withProject ? quantityCell(row.projectQuantity, null, presence.project) : '<td class="qty">—</td>'}
+      ${quantityCell(row.vorQuantity, base, presence.vor)}
+      ${quantityCell(row.gprQuantity, data.withProject && presence.project ? base : null, presence.gpr)}
+      <td>${escapeHtml(confidenceLabel)}${row.unit ? `<div class="hint">${escapeHtml(row.unit)}</div>` : ''}</td>
       <td>${renderMaterials(row.requiredMaterials)}</td>
       <td style="max-width:220px">${escapeHtml(row.note || '')}</td>
     `;
     tbody.appendChild(tr);
   });
+}
+
+function renderMaterialsAnalysis(materials) {
+  const wrap = el('materialsWrap');
+  if (!materials || (!materials.provided && materials.projectMaterials.length === 0)) {
+    wrap.hidden = true;
+    return;
+  }
+  wrap.hidden = false;
+  el('materialsDisclaimer').textContent = '⚠️ ' + materials.disclaimer;
+
+  el('materialsMissing').innerHTML = materials.missing.length
+    ? `<h3>Не учтено в проекте, но необходимо (${materials.missing.length})</h3>` +
+      materials.missing
+        .map((m) => `
+          <div class="material-alert">
+            <div class="title">${escapeHtml(m.materialName)}</div>
+            <div>${escapeHtml(m.note)}</div>
+            ${m.agentName ? `<div class="hint">${escapeHtml(m.agentName)}</div>` : ''}
+          </div>`)
+        .join('')
+    : '<div class="sequencing-ok">Все обязательные материалы работ из ВОР и ГПР найдены в проекте (по шаблонам базы знаний).</div>';
+
+  const mismatches = materials.quantityChecks.filter((q) => q.status === 'mismatch');
+  el('materialsQuantity').innerHTML = mismatches.length
+    ? `<h3>Количество материала не сходится с объёмом работ (${mismatches.length})</h3>` +
+      mismatches
+        .map((q) => `
+          <div class="material-alert warn">
+            <div class="title">${escapeHtml(q.resourceName)}</div>
+            <div>${escapeHtml(q.note)}</div>
+            <div class="hint">Работы: ${escapeHtml(q.works.join('; '))} · в проекте: ${escapeHtml(q.projectNames.join('; '))}</div>
+          </div>`)
+        .join('')
+    : '';
+
+  el('materialsBody').innerHTML = materials.projectMaterials.length
+    ? materials.projectMaterials
+      .map((m) => {
+        const info = MATERIAL_STATUS_LABELS[m.status] || { label: m.status, badge: 'warn' };
+        const works = m.works
+          .map((w) => `<li>${escapeHtml(w.workName)}${w.inDocs ? '' : ' <span class="hint">(нет в ВОР/ГПР)</span>'}</li>`)
+          .join('');
+        return `
+          <tr class="material-${escapeHtml(m.status)}">
+            <td><strong>${escapeHtml(m.name)}</strong>${m.vorNames.length ? `<div class="hint">ВОР: ${escapeHtml(m.vorNames.join('; '))}</div>` : ''}</td>
+            <td><span class="badge ${info.badge}">${escapeHtml(info.label)}</span></td>
+            <td class="qty">${escapeHtml(m.quantity ?? '—')} ${escapeHtml(m.unit)}</td>
+            <td class="qty">${escapeHtml(m.vorQuantity ?? '—')}</td>
+            <td>${works ? `<ul class="materials-list">${works}</ul>` : '<span class="hint">—</span>'}</td>
+            <td style="max-width:240px">${escapeHtml(m.note)}</td>
+          </tr>`;
+      })
+      .join('')
+    : '<tr><td colspan="6" class="hint">В проекте не найдено строк материалов — загрузите спецификацию, чтобы агенты проверили материалы.</td></tr>';
+
+  el('materialsVorOnly').innerHTML = materials.vorOnly.length
+    ? `<p class="hint">Есть в ВОР, но не найдено в проекте: ${escapeHtml(materials.vorOnly.map((v) => v.name).join('; '))}</p>`
+    : '';
 }
 
 const RESOURCE_TYPE_LABELS = {
@@ -239,11 +347,11 @@ function renderResources(resourceEstimate) {
       (r) => `
         <tr>
           <td><span class="resource-type-tag">${RESOURCE_TYPE_LABELS[r.resourceType] || r.resourceType}</span></td>
-          <td>${r.resourceName}</td>
-          <td>${r.totalQuantity}</td>
-          <td>${r.outputUnit}</td>
-          <td>${r.confidence}</td>
-          <td style="color:var(--muted);font-size:12px">${r.contributingWorks.map((w) => w.workName).join('; ')}</td>
+          <td>${escapeHtml(r.resourceName)}</td>
+          <td>${escapeHtml(r.totalQuantity)}</td>
+          <td>${escapeHtml(r.outputUnit)}</td>
+          <td>${escapeHtml(r.confidence)}</td>
+          <td style="color:var(--muted);font-size:12px">${escapeHtml(r.contributingWorks.map((w) => w.workName).join('; '))}</td>
           <td>${renderSupplierMatchesCell(r)}</td>
         </tr>
       `
@@ -254,7 +362,7 @@ function renderResources(resourceEstimate) {
   if (resourceEstimate.uncovered.length > 0) {
     uncoveredEl.innerHTML =
       'Без оценки (нет норм в демо-базе или не распознан объём): ' +
-      resourceEstimate.uncovered.map((u) => u.workName).join(', ');
+      escapeHtml(resourceEstimate.uncovered.map((u) => u.workName).join(', '));
   } else {
     uncoveredEl.innerHTML = '';
   }
@@ -290,13 +398,13 @@ function renderHistory(versions, projectId) {
         if (diff.added.length) {
           parts.push(
             'Появилось: ' +
-              renderDiffList(diff.added, 'added', (i) => i.workName)
+              renderDiffList(diff.added, 'added', (i) => escapeHtml(i.workName))
           );
         }
         if (diff.removed.length) {
           parts.push(
             'Пропало: ' +
-              renderDiffList(diff.removed, 'removed', (i) => i.workName)
+              renderDiffList(diff.removed, 'removed', (i) => escapeHtml(i.workName))
           );
         }
         if (diff.changed.length) {
@@ -306,7 +414,13 @@ function renderHistory(versions, projectId) {
                 diff.changed,
                 'changed',
                 (i) =>
-                  `${i.workName} — ГПР: ${i.gprQuantity.before ?? '—'} → ${i.gprQuantity.after ?? '—'}, ВОР: ${i.vorQuantity.before ?? '—'} → ${i.vorQuantity.after ?? '—'}`
+                  escapeHtml(
+                    `${i.workName} — ` +
+                    (i.projectQuantity && (i.projectQuantity.before !== null || i.projectQuantity.after !== null)
+                      ? `проект: ${i.projectQuantity.before ?? '—'} → ${i.projectQuantity.after ?? '—'}, `
+                      : '') +
+                    `ВОР: ${i.vorQuantity.before ?? '—'} → ${i.vorQuantity.after ?? '—'}, ГПР: ${i.gprQuantity.before ?? '—'} → ${i.gprQuantity.after ?? '—'}`
+                  )
               )
           );
         }
@@ -316,6 +430,7 @@ function renderHistory(versions, projectId) {
       }
 
       const reportUrl = `${API}projects/${projectId}/versions/${v.id}/report`;
+      const summaryUrl = `${API}projects/${projectId}/versions/${v.id}/summary`;
 
       return `
         <div class="history-item">
@@ -323,6 +438,7 @@ function renderHistory(versions, projectId) {
             <span>Версия ${versionNumber} · ${date}</span>
             <span>
               ОК: ${v.summary.ok} / требуют внимания: ${v.summary.issues}
+              · <a href="${summaryUrl}" target="_blank" rel="noopener">сводка для заказчика</a>
               · <a href="${reportUrl}" target="_blank" rel="noopener">отчёт (исполнительная документация)</a>
             </span>
           </div>
@@ -387,12 +503,13 @@ async function runCrosscheck() {
   try {
     const gpr = await readDocumentInput(el('gprFile'), el('gprText'));
     const vor = await readDocumentInput(el('vorFile'), el('vorText'));
+    const project = await readDocumentInput(el('projectFile'), el('projectText'));
 
     const endpoint = projectId ? `${API}projects/${projectId}/versions` : API + 'crosscheck';
     const response = await apiFetch(endpoint, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify(projectId ? { gpr, vor } : { gpr, vor, disciplines: crosscheckSelection }),
+      body: JSON.stringify(projectId ? { gpr, vor, project } : { gpr, vor, project, disciplines: crosscheckSelection }),
     });
 
     const data = await response.json();
@@ -404,6 +521,7 @@ async function runCrosscheck() {
 
     const result = projectId ? data.result : data;
     renderResults(result);
+    renderMaterialsAnalysis(result.materials);
     renderSequencing(result.sequencing);
     renderResources(result.resourceEstimate);
     renderAgents(result.agents);
@@ -422,8 +540,10 @@ el('runBtn').addEventListener('click', runCrosscheck);
 el('demoBtn').addEventListener('click', () => {
   el('gprText').value = DEMO_GPR;
   el('vorText').value = DEMO_VOR;
+  el('projectText').value = DEMO_PROJECT;
   el('gprFile').value = '';
   el('vorFile').value = '';
+  el('projectFile').value = '';
 });
 
 el('projectSelect').addEventListener('change', onProjectChange);
@@ -842,6 +962,7 @@ function renderHeader() {
   const label = user.platformAdmin ? 'Администратор сервиса' : roleInfo ? roleInfo.name : user.role;
   el('currentUserInfo').innerHTML = `${escapeHtml(user.name)} <span class="role-badge">${escapeHtml(label)}</span>`;
   el('companyName').textContent = authState.company ? authState.company.name : '';
+  if (typeof refreshExecutiveBadge === 'function' && authState.user.companyId) refreshExecutiveBadge();
 
   const sub = authState.subscription;
   const chip = el('subscriptionChip');

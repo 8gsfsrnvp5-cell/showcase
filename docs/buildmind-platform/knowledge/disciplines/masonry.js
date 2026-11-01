@@ -163,7 +163,10 @@
       message: 'Облицовочная кладка есть, а армирования (связей, сеток) отдельной позицией нет — проверьте, где учтены гибкие связи.',
     },
   ],
-  sequencingRules: [],
+  sequencingRules: [
+    { id: 'concrete-before-blocks', beforeWorkId: 'mono-concrete', afterWorkId: 'masonry-blocks', reason: 'Кладку ведут по монолитным конструкциям после набора ими прочности.' },
+    { id: 'concrete-before-brick', beforeWorkId: 'mono-concrete', afterWorkId: 'masonry-brick', reason: 'Кладку ведут по монолитным конструкциям после набора ими прочности.' },
+  ],
   resourceRules: [
     {
       id: 'masonry-brick-units', workId: 'masonry-brick', resourceType: 'material', resourceName: 'Кирпич одинарный 250×120×65',

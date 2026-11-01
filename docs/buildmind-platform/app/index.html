@@ -84,7 +84,10 @@
       </div>
       <nav class="tabs" id="tabs">
         <a href="#projects" data-tab="projects" data-company>Проекты</a>
-        <a href="#crosscheck" data-tab="crosscheck" data-company>Сверка ГПР/ВОР</a>
+        <a href="#crosscheck" data-tab="crosscheck" data-company>Сводка документов</a>
+        <a href="#executive" data-tab="executive" data-company>Исполнительная</a>
+        <a href="#schedule" data-tab="schedule" data-company>Люди и сроки</a>
+        <a href="#drawings" data-tab="drawings" data-company>Чертежи</a>
         <a href="#suppliers" data-tab="suppliers" data-company>Поставщики</a>
         <a href="#team" data-tab="team" data-company data-perm="users.manage">Команда</a>
         <a href="#billing" data-tab="billing" data-company data-perm="billing.view">Тариф и оплата</a>
@@ -108,12 +111,14 @@
         <div id="projectsList" class="cards"></div>
       </section>
 
-      <!-- ========================== Сверка ГПР/ВОР ========================== -->
+      <!-- ===================== Сводка: проект — ВОР — ГПР ===================== -->
       <section id="tab-crosscheck" class="tab-panel" hidden>
-        <h2>Быстрая сверка ГПР и ВОР</h2>
-        <p class="hint">Загрузите график производства работ и ведомость объёмов — BuildMind сопоставит работы
-          с базой знаний выбранных видов работ, найдёт расхождения объёмов и пропуски, проверит последовательность,
-          а профильные агенты — комплектность позиций, акты скрытых работ и нормативную базу.</p>
+        <h2>Сводка: проект — ВОР — ГПР</h2>
+        <p class="hint">Загрузите проект (ведомость объёмов и спецификацию материалов), ведомость объёмов работ
+          и график производства работ — BuildMind сопоставит работы с базой знаний выбранных видов работ и покажет,
+          где документы расходятся: чего нет в проекте, ВОР или ГПР, где не сходятся объёмы, каких материалов
+          не хватает и для каких работ они нужны. Профильные агенты проверят комплектность, последовательность,
+          акты скрытых работ и нормативную базу.</p>
         <p class="disclaimer">Результат — подсказка: перед решением его проверяет инженер ПТО. Нормы расхода в базе — шаблоны, не сметные нормативы.</p>
 
         <section class="project-bar">
@@ -131,16 +136,23 @@
 
         <section class="uploads">
           <div class="upload-box">
-            <h3>ГПР (график производства работ)</h3>
-            <p class="hint">.xlsx, .pdf (с текстовым слоем) или CSV: наименование работы, объём, ед. измерения</p>
-            <input type="file" id="gprFile" accept=".csv,.xlsx,.pdf,text/csv,application/pdf" />
-            <textarea id="gprText" placeholder="…или вставьте CSV прямо сюда" rows="6"></textarea>
+            <h3>Проект</h3>
+            <p class="hint">Ведомость объёмов и (или) спецификация материалов из проекта: .xlsx, .pdf (с текстовым слоем) или CSV.
+              Строки работ и материалов BuildMind разделит сам. Можно не загружать — тогда сверятся только ВОР и ГПР.</p>
+            <input type="file" id="projectFile" accept=".csv,.xlsx,.pdf,text/csv,application/pdf" />
+            <textarea id="projectText" placeholder="…или вставьте CSV прямо сюда" rows="6"></textarea>
           </div>
           <div class="upload-box">
             <h3>ВОР (ведомость объёмов работ)</h3>
             <p class="hint">.xlsx, .pdf (с текстовым слоем) или CSV: наименование работы, объём, ед. измерения</p>
             <input type="file" id="vorFile" accept=".csv,.xlsx,.pdf,text/csv,application/pdf" />
             <textarea id="vorText" placeholder="…или вставьте CSV прямо сюда" rows="6"></textarea>
+          </div>
+          <div class="upload-box">
+            <h3>ГПР (график производства работ)</h3>
+            <p class="hint">.xlsx, .pdf (с текстовым слоем) или CSV: наименование работы, объём, ед. измерения</p>
+            <input type="file" id="gprFile" accept=".csv,.xlsx,.pdf,text/csv,application/pdf" />
+            <textarea id="gprText" placeholder="…или вставьте CSV прямо сюда" rows="6"></textarea>
           </div>
         </section>
         <p class="hint">Сканы без текстового слоя распознаёт рабочее место проекта (OCR в браузере).</p>
@@ -159,8 +171,9 @@
               <tr>
                 <th>Работа (по базе знаний)</th>
                 <th>Статус</th>
-                <th>Объём ГПР</th>
-                <th>Объём ВОР</th>
+                <th>Проект</th>
+                <th>ВОР</th>
+                <th>ГПР</th>
                 <th>Уверенность</th>
                 <th>Материалы (по базе знаний)</th>
                 <th>Комментарий</th>
@@ -168,6 +181,28 @@
             </thead>
             <tbody id="resultsBody"></tbody>
           </table>
+        </section>
+
+        <section id="materialsWrap" hidden>
+          <h2>Материалы: проект — ВОР — работы</h2>
+          <p class="disclaimer" id="materialsDisclaimer"></p>
+          <div id="materialsMissing"></div>
+          <div id="materialsQuantity"></div>
+          <h3>Материалы проекта</h3>
+          <table id="materialsTable">
+            <thead>
+              <tr>
+                <th>Материал (по проекту)</th>
+                <th>Статус</th>
+                <th>Проект</th>
+                <th>ВОР</th>
+                <th>Для каких работ</th>
+                <th>Комментарий</th>
+              </tr>
+            </thead>
+            <tbody id="materialsBody"></tbody>
+          </table>
+          <div id="materialsVorOnly"></div>
         </section>
 
         <section id="sequencingWrap" hidden>
@@ -208,6 +243,208 @@
           <p class="hint">Каждая загрузка документов добавляет версию и не стирает предыдущую.</p>
           <div id="historyList"></div>
         </section>
+      </section>
+
+      <!-- ====================== Исполнительная документация ====================== -->
+      <section id="tab-executive" class="tab-panel" hidden>
+        <h2>Исполнительная документация</h2>
+        <p class="hint">Журнал работ, паспорта и сертификаты, запросы недостающих документов и АОСР. BuildMind сверяет журнал
+          с документами о качестве: чего не хватает — запрашивает у снабжения или ПТО, а когда по работе всё собрано —
+          формирует АОСР. Формы — по приказам Минстроя России № 344/пр (АОСР) и № 1026/пр (общий журнал работ).</p>
+
+        <section class="project-bar">
+          <label for="execProjectSelect">Проект:</label>
+          <select id="execProjectSelect"></select>
+          <span id="execPrintLinks" class="exec-print-links"></span>
+        </section>
+        <p id="execEmpty" class="hint" hidden>Создайте проект во вкладке «Проекты» — журнал и ИД ведутся по проекту.</p>
+
+        <div id="execBody" hidden>
+          <section id="execSummary" class="summary"></section>
+          <p id="execReadOnly" class="disclaimer" hidden></p>
+
+          <nav class="subtabs" id="execSubtabs">
+            <button type="button" data-sub="works" class="active">ИД по работам</button>
+            <button type="button" data-sub="journal">Журнал работ</button>
+            <button type="button" data-sub="documents">Документы о качестве</button>
+            <button type="button" data-sub="requests">Запросы <span id="execRequestsCount" class="count-badge" hidden></span></button>
+            <button type="button" data-sub="object">Данные объекта</button>
+          </nav>
+
+          <div class="exec-panel" data-sub="works">
+            <div id="execWorks"></div>
+            <h3>Сформированные акты</h3>
+            <div id="execActs"></div>
+          </div>
+
+          <div class="exec-panel" data-sub="journal" hidden>
+            <form id="journalForm" class="exec-form">
+              <h3>Новая запись (раздел 3 общего журнала работ)</h3>
+              <div class="exec-grid">
+                <label>Дата выполнения<input type="date" id="jeDate" required /></label>
+                <label>Условия производства работ<input type="text" id="jeConditions" placeholder="Ясно, +18 °C, без осадков" /></label>
+                <label class="span-2">Работа<input type="text" id="jeWork" list="execWorksList" placeholder="Начните вводить — подскажем работы из сводки" required /></label>
+                <label>Место (оси, отметки, захватка)<input type="text" id="jeLocation" placeholder="Участок 1, оси 1–4" /></label>
+                <label>Объём за день<span class="inline"><input type="number" step="any" id="jeVolume" /><input type="text" id="jeUnit" class="unit" placeholder="ед." /></span></label>
+                <label>Кто выполнил запись<input type="text" id="jePerformer" placeholder="Должность, ФИО представителя подрядчика" /></label>
+                <label class="span-2">Описание, методы, испытания<input type="text" id="jeDescription" /></label>
+              </div>
+              <div class="exec-materials">
+                <div class="hint">Применённые материалы — по ним BuildMind проверит паспорта и сертификаты:</div>
+                <div id="jeMaterials"></div>
+                <button type="button" class="secondary small" id="jeAddMaterial">+ материал</button>
+              </div>
+              <div class="actions">
+                <button type="submit">Записать в журнал</button>
+                <span id="journalStatus" class="hint"></span>
+              </div>
+            </form>
+            <datalist id="execWorksList"></datalist>
+            <datalist id="execMaterialsList"></datalist>
+            <table class="exec-table">
+              <thead><tr><th>№</th><th>Дата</th><th>Работа и место</th><th>Объём</th><th>Материалы</th><th>Условия, исполнитель</th><th></th></tr></thead>
+              <tbody id="journalBody"></tbody>
+            </table>
+          </div>
+
+          <div class="exec-panel" data-sub="documents" hidden>
+            <form id="docForm" class="exec-form">
+              <h3>Загрузить документ</h3>
+              <div class="exec-grid">
+                <label>Вид документа<select id="docType"></select></label>
+                <label class="doc-material span-2">Материал<input type="text" id="docMaterial" list="execMaterialsList" placeholder="Например, Плитка тротуарная 300×300×80" /></label>
+                <label class="doc-work span-2" hidden>Работа<input type="text" id="docWork" list="execWorksList" /></label>
+                <label>Номер<input type="text" id="docNumber" placeholder="распознается из PDF" /></label>
+                <label>Дата<input type="date" id="docDate" /></label>
+                <label>Партия<input type="text" id="docBatch" /></label>
+                <label>Изготовитель<input type="text" id="docManufacturer" /></label>
+                <label class="span-2">Файл (PDF, JPG, PNG до 20 МБ)<input type="file" id="docFile" accept=".pdf,.jpg,.jpeg,.png,application/pdf,image/*" /></label>
+              </div>
+              <div class="actions">
+                <button type="submit">Загрузить</button>
+                <span id="docStatus" class="hint"></span>
+              </div>
+            </form>
+            <table class="exec-table">
+              <thead><tr><th>Документ</th><th>Материал или работа</th><th>Реквизиты</th><th>Файл</th><th>Загрузил</th><th></th></tr></thead>
+              <tbody id="docsBody"></tbody>
+            </table>
+          </div>
+
+          <div class="exec-panel" data-sub="requests" hidden>
+            <p class="hint">Запросы создаёт агент комплектности: на материал из журнала без документа о качестве — снабжению,
+              на скрытую работу без исполнительной схемы — инженеру ПТО. Загруженный документ закрывает запрос сам.</p>
+            <div id="execRequests"></div>
+          </div>
+
+          <div class="exec-panel" data-sub="object" hidden>
+            <form id="objectForm" class="exec-form">
+              <h3>Объект и участники — для шапки АОСР</h3>
+              <div class="exec-grid">
+                <label class="span-2">Наименование объекта (по проектной документации)<input type="text" id="objName" /></label>
+                <label class="span-2">Почтовый или строительный адрес<input type="text" id="objAddress" /></label>
+                <label class="span-2">Проектная документация (шифр, листы)<input type="text" id="objProjectCode" placeholder="01-2027-ПЗУ, листы 3–7" /></label>
+              </div>
+              <div id="objParties"></div>
+              <div id="objReps"></div>
+              <div class="actions">
+                <button type="submit">Сохранить</button>
+                <span id="objectStatus" class="hint"></span>
+              </div>
+            </form>
+          </div>
+        </div>
+      </section>
+
+      <!-- ========================== Люди и сроки ========================== -->
+      <section id="tab-schedule" class="tab-panel" hidden>
+        <h2>Люди, техника и сроки</h2>
+        <p class="hint">BuildMind берёт работы и объёмы из сводки, даты — из ГПР, выработку и состав бригад — из базы знаний
+          (или ваших норм) и считает, сколько людей и техники нужно, чтобы уложиться в график. Агент находит
+          технологические перерывы и простои и предлагает, куда перевести бригады; по журналу работ — прогноз отставания.</p>
+
+        <section class="project-bar">
+          <label for="schedProjectSelect">Проект:</label>
+          <select id="schedProjectSelect"></select>
+        </section>
+        <p id="schedEmpty" class="hint" hidden></p>
+
+        <div id="schedBody" hidden>
+          <form id="schedSettings" class="sched-settings">
+            <label>Людей на объекте<input type="number" min="1" id="schedHeadcount" placeholder="например, 40" /></label>
+            <label>Рабочих дней в неделю<select id="schedWorkDays"><option value="5">5</option><option value="6">6</option><option value="7">7</option></select></label>
+            <label>Смен в сутки<select id="schedShifts"><option value="1">1</option><option value="2">2</option></select></label>
+            <button type="submit" class="small">Пересчитать</button>
+            <span id="schedStatus" class="hint"></span>
+          </form>
+
+          <section id="schedSummary" class="summary"></section>
+          <p id="schedNoDates" class="disclaimer" hidden>В ГПР последней сводки нет колонок с датами начала и окончания — загрузите ГПР с датами, тогда BuildMind построит загрузку по дням, найдёт простои и перерывы.</p>
+
+          <section id="schedChartWrap" hidden>
+            <h3>Сколько людей нужно на объекте по дням</h3>
+            <div id="schedChart" class="sched-chart"></div>
+            <div class="sched-legend"><span class="lg ok"></span>в пределах численности <span class="lg over"></span>не хватает людей <span class="lg idle"></span>простой (занято меньше половины) <span class="lg line"></span>людей на объекте</div>
+          </section>
+
+          <h3>Что предлагает агент</h3>
+          <div id="schedRecommendations"></div>
+
+          <h3>Работы: выработка, бригады, техника</h3>
+          <p class="disclaimer" id="schedDisclaimer"></p>
+          <div class="sched-table-wrap">
+            <table class="exec-table">
+              <thead><tr><th>Работа</th><th>Объём</th><th>Выработка бригады за смену</th><th>Бригада</th><th>Бригад / людей</th><th>Техника</th><th>По ГПР</th><th>Комментарий</th></tr></thead>
+              <tbody id="schedWorks"></tbody>
+            </table>
+          </div>
+        </div>
+      </section>
+
+      <!-- ============================ Чертежи ============================ -->
+      <section id="tab-drawings" class="tab-panel" hidden>
+        <h2>Чертежи: склейка и ход работ</h2>
+        <p class="hint">Загрузите листы плана из PDF проекта — BuildMind разложит их на общем поле. В режиме «Склейка листов»
+          совместите листы по линиям сшивки (прозрачность помогает), затем обведите участки и привяжите их к работам ГПР.
+          Цвет участка обновляется по журналу работ и графику: зелёный — выполнено, жёлтый — следующий этап,
+          красный — пора начинать или есть отставание.</p>
+
+        <section class="project-bar">
+          <label for="drwProjectSelect">Проект:</label>
+          <select id="drwProjectSelect"></select>
+          <label for="drwDate">Состояние на</label>
+          <input type="date" id="drwDate" />
+        </section>
+
+        <div class="drw-toolbar">
+          <label class="drw-file secondary" id="drwFileLabel">+ Листы (PDF, JPG, PNG)<input type="file" id="drwFile" multiple accept=".pdf,application/pdf,image/png,image/jpeg" /></label>
+          <div class="drw-modes" role="group" aria-label="Режим">
+            <button type="button" data-mode="view" class="active">Просмотр</button>
+            <button type="button" data-mode="move">Склейка листов</button>
+            <button type="button" data-mode="draw">Обвести участок</button>
+          </div>
+          <button type="button" class="secondary small" id="drwZoomIn" title="Приблизить">+</button>
+          <button type="button" class="secondary small" id="drwZoomOut" title="Отдалить">−</button>
+          <button type="button" class="secondary small" id="drwFit">Весь план</button>
+          <span id="drwStatus" class="hint"></span>
+        </div>
+
+        <div class="drw-layout">
+          <div class="drw-board" id="drwBoard">
+            <svg id="drwSvg" xmlns="http://www.w3.org/2000/svg" aria-label="Склейка листов проекта"></svg>
+            <p id="drwEmpty" class="drw-empty" hidden>Листов пока нет. Добавьте листы плана из PDF проекта.</p>
+          </div>
+          <aside class="drw-side">
+            <div class="drw-legend">
+              <span><i class="st-done"></i>Выполнено</span>
+              <span><i class="st-progress"></i>В работе</span>
+              <span><i class="st-next"></i>Следующий этап</span>
+              <span><i class="st-critical"></i>Критично</span>
+              <span><i class="st-planned"></i>Позже по графику</span>
+            </div>
+            <div id="drwPanel"></div>
+          </aside>
+        </div>
       </section>
 
       <!-- ============================ Поставщики ============================ -->
@@ -367,6 +604,9 @@
     </form>
   </dialog>
 
-  <script src="../runtime.js" data-app="app/app.js"></script>
+  <script src="../runtime.js" data-app="app/app.js app/executive.js app/schedule.js app/drawings.js"></script>
+  
+  
+  
 </body>
 </html>

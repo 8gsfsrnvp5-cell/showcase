@@ -222,6 +222,10 @@
     { id: 'piles-before-cutting', beforeWorkId: 'found-driven-piles', afterWorkId: 'found-pile-cutting', reason: 'Срубить головы можно только у погруженных свай.' },
     { id: 'cutting-before-grillage', beforeWorkId: 'found-pile-cutting', afterWorkId: 'found-raft-grillage', reason: 'Ростверк бетонируют после срубки голов свай и подготовки выпусков.' },
     { id: 'prep-before-raft', beforeWorkId: 'found-concrete-prep', afterWorkId: 'found-raft-grillage', reason: 'Фундамент устраивают по готовой бетонной подготовке.' },
+    { id: 'prep-before-waterproofing', beforeWorkId: 'found-concrete-prep', afterWorkId: 'found-waterproofing', reason: 'Гидроизоляцию устраивают по бетонной подготовке, набравшей прочность.' },
+    { id: 'prep-before-rebar', beforeWorkId: 'found-concrete-prep', afterWorkId: 'mono-rebar', reason: 'Арматуру фундамента раскладывают по готовой бетонной подготовке.' },
+    { id: 'prep-before-formwork', beforeWorkId: 'found-concrete-prep', afterWorkId: 'mono-formwork', reason: 'Опалубку фундамента устанавливают по готовой бетонной подготовке.' },
+    { id: 'waterproofing-before-backfill', beforeWorkId: 'found-waterproofing', afterWorkId: 'earth-backfill', reason: 'Пазухи засыпают после гидроизоляции и её приёмки по акту скрытых работ.' },
   ],
   resourceRules: [
     {

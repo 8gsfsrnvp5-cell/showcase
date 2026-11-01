@@ -216,6 +216,7 @@
   sequencingRules: [
     { id: 'pit-before-backfill', beforeWorkId: 'earth-pit-excavation', afterWorkId: 'earth-backfill', reason: 'Засыпать пазухи можно только после разработки котлована.' },
     { id: 'pit-before-cushion', beforeWorkId: 'earth-pit-excavation', afterWorkId: 'earth-sand-cushion', reason: 'Подушку устраивают на дне разработанного котлована.' },
+    { id: 'pit-before-prep', beforeWorkId: 'earth-pit-excavation', afterWorkId: 'found-concrete-prep', reason: 'Бетонную подготовку устраивают по принятому дну котлована.' },
   ],
   resourceRules: [],
 });

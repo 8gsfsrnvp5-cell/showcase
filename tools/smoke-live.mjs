@@ -20,6 +20,15 @@ const CHECKS = [
   ['buildmind/', 'BuildMind'],
   ['procurement/', 'BuildMind'],
   ['procurement-v1/', 'BuildMind'],
+  ['buildmind-platform/', 'Демо-вход'],
+  ['aero-cargo/', 'Войти в командный центр'],
+  ['skyseal-agent/', 'Создать заявку'],
+  ['skyseal-agent/tower', 'Вход диспетчера'],
+  ['yoftam/', 'YOFTAM'],
+  ['yoftam/ru/avatar/', 'Аватар'],
+  ['yoftam/tg/', 'YOFTAM'],
+  ['buildmind-cursor/', 'BuildMind'],
+  ['buildmind-cursor/works', 'Работы'],
   ['does-not-exist/', 'Такой страницы нет'],
 ];
 

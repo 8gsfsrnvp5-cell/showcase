@@ -77,6 +77,27 @@ out.report = {
   hasFinding: /Нет ухода за бетоном|вывоза излишков грунта/.test(reportText),
 };
 
+// Сводка «проект — ВОР — ГПР»: сводка для заказчика и материалы.
+const summaryLink = page.locator('#historyList a', { hasText: 'сводка для заказчика' }).first();
+const [summaryPopup] = await Promise.all([page.waitForEvent('popup'), summaryLink.click()]);
+await summaryPopup.waitForLoadState();
+await summaryPopup.waitForTimeout(500);
+const summaryText = await summaryPopup.evaluate(() => document.body.innerText);
+out.customerSummary = {
+  title: summaryText.includes('Сводка по документам объекта'),
+  missingMaterials: (summaryText.match(/Материалы, не учтённые в проекте \((\d+)\)/) || [])[1] || null,
+  reinforcementMissingInVor: /Армирование монолитных конструкций[\s\S]{0,120}Нет в ВОР/.test(summaryText),
+};
+await page.click('#demoBtn');
+await page.selectOption('#projectSelect', '');
+await page.click('#runBtn');
+await page.waitForSelector('#materialsWrap:not([hidden])', { timeout: 20000 });
+out.demoSummary = {
+  stats: (await page.innerText('#summary')).replace(/\s+/g, ' '),
+  missingMaterials: await page.$$eval('#materialsMissing .material-alert', (els) => els.length),
+  projectColumn: await page.$$eval('#resultsBody tr', (trs) => trs.filter((tr) => tr.children[2].textContent.trim() !== '—').length),
+};
+
 // Исправления аудита: полная выгрузка проекта и большая ведомость во встроенном сервере.
 out.export = await page.evaluate(async () => {
   const api = new URL('../api/', location.href);
@@ -98,6 +119,36 @@ out.bigCrosscheck = await page.evaluate(async () => {
   const data = await r.json();
   return { status: r.status, ms: Math.round(performance.now() - t0), results: data.results && data.results.length, violations: data.sequencing && data.sequencing.violations.length };
 });
+
+// Этапы 2–4 на объекте «Жилой дом»: исполнительная, люди и сроки, чертежи.
+const pickHouse = async (selectId) => {
+  await page.waitForFunction((id) => document.querySelectorAll(`#${id} option`).length > 1, selectId, { timeout: 20000 });
+  const value = await page.$eval(`#${selectId}`, (s) => [...s.options].find((o) => o.textContent.includes('Жилой дом')).value);
+  await page.selectOption(`#${selectId}`, value);
+  await page.waitForTimeout(1500);
+};
+await page.goto(BASE + 'app/#executive');
+await pickHouse('execProjectSelect');
+out.executive = {
+  summary: (await page.innerText('#execSummary')).replace(/\s+/g, ' '),
+  acts: await page.$$eval('#execActs a', (a) => a.map((x) => x.textContent)),
+  works: await page.$$eval('#execWorks .exec-work', (w) => w.length),
+};
+await page.goto(BASE + 'app/#schedule');
+await pickHouse('schedProjectSelect');
+out.schedule = {
+  summary: (await page.innerText('#schedSummary')).replace(/\s+/g, ' '),
+  bars: await page.$$eval('#schedChart rect', (r) => r.length),
+  recommendations: await page.$$eval('.sched-rec', (r) => r.length),
+};
+await page.goto(BASE + 'app/#drawings');
+await pickHouse('drwProjectSelect');
+out.drawings = {
+  sheets: await page.$$eval('#drwSvg [data-sheet]', (g) => g.length),
+  fills: await page.$$eval('#drwSvg [data-zone] polygon', (p) => p.map((x) => x.getAttribute('fill'))),
+  images: await page.$$eval('#drwSvg image', (imgs) => Promise.all(imgs.map((i) => fetch(i.getAttribute('href')).then((r) => `${r.status} ${r.headers.get('content-type')}`)))),
+};
+await page.screenshot({ path: `platform-drawings-${MODE}.png` });
 
 out.errors = errors;
 console.log(JSON.stringify(out, null, 2));
