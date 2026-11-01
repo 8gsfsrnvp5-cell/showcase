@@ -18,6 +18,8 @@ const docs = path.join(here, 'docs');
  * files   — explicit [source, target] pairs instead of a whole directory
  * exclude — top-level names to skip when copying `from`
  * spa     — client-side routes beyond real folders: deep links are rescued by 404.html
+ * routes  — client-side routes served as <route>.html copies of index.html, so
+ *           GitHub Pages answers /<route> with 200 instead of the 404.html detour
  */
 const APPS = [
   { slug: 'yobanda', from: 'yobanda/dist' },
@@ -48,7 +50,12 @@ const APPS = [
   { slug: 'aero-cargo', from: 'aero-cargo-ai/dist/static-demo', spa: true },
   { slug: 'skyseal-agent', from: 'skyseal-agent/dist/static-demo' },
   { slug: 'yoftam', from: 'YOFTAM/dist/static-demo' },
-  { slug: 'buildmind-cursor', from: 'buildmind-cursor-mvp/dist', spa: true },
+  {
+    slug: 'buildmind-cursor',
+    from: 'buildmind-cursor-mvp/dist',
+    spa: true,
+    routes: ['documents', 'works', 'materials', 'resources', 'budget', 'calculators', 'approvals', 'executive', 'access', 'investment', 'settings'],
+  },
   { slug: 'procurement', from: 'buildmind-procurement-mvp2', exclude: ['.git', 'README.md'] },
   { slug: 'procurement-v1', from: '_unzipped/buildmind_mvp_github_starter', exclude: ['README.md'] },
 ];
@@ -99,6 +106,7 @@ for (const app of APPS) {
     if (!fs.existsSync(src)) throw new Error(`${app.slug}: build not found at ${src}`);
     copyDir(src, dst, app);
   }
+  for (const route of app.routes ?? []) fs.copyFileSync(path.join(dst, 'index.html'), path.join(dst, `${route}.html`));
   for (const file of htmlFiles(dst)) {
     let html = fs.readFileSync(file, 'utf8');
     if (app.patchHtml && path.dirname(file) === dst) html = app.patchHtml(html);
